@@ -1,0 +1,62 @@
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+
+# dotenv environment variable files
+.env
+.env.*
+
+# Runtime data
+*.pid
+*.seed
+*.pid.lock
+
+# Build / Cache
+.cache/
+dist/
+build/
+*.tsbuildinfo
+
+# Coverage reports
+coverage/
+.nyc_output/
+*.lcov
+
+# Debug & diagnostic reports
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+report.*.json
+
+# VSCode
+.vscode/
+
+# ESLint / Stylelint cache
+.eslintcache
+.stylelintcache
+
+# Parcel, Snowpack, Webpack
+.parcel-cache/
+web_modules/
+
+# Optional npm cache
+.npm/
+
+# Output of 'npm pack'
+*.tgz
+
+# REPL history
+.node_repl_history
+
+# Database config (opcional si vas a guardar dumps o exportar cosas)
+*.sql
+*.sqlite
+*.dump
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
