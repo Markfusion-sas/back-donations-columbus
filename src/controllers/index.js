@@ -1,5 +1,6 @@
+import { donationControllerFactory } from '#controllers/donation.controller';
 import { signatureControllerFactory } from '#controllers/wompiSignature.controller';
-import { paymentControllerFactory } from '#controllers/wompiTransaction.controller';
+import { listTransactions, paymentControllerFactory } from '#controllers/wompiTransaction.controller';
 import { wompiTransactionService } from '#services/index';
 import { generateWompiSignature } from '#utils/signature.util';
 import { validateChecksum } from '#utils/validateCheksum.util';
@@ -27,3 +28,9 @@ export const wompiController = paymentControllerFactory(
 export const wompiSignatureController = signatureControllerFactory(
   generateWompiSignature
 );
+
+export const listTransactionsController = listTransactions( 
+  wompiTransactionService.getAllTransactions
+);
+
+export const donationController = donationControllerFactory();

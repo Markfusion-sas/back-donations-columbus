@@ -1,3 +1,4 @@
+import { Donation } from '#models/donation.model';
 import { errorLog } from '#utils/logger.util';
 /**
  * @module services/wompiTransactionService
@@ -60,6 +61,29 @@ export const wompiTransactionServiceFactory = ({ Transaction, mapWompiTransactio
       return null;
     }
   };
+
+  const getAllTransactions = async() => {
+
+    try {
+      
+      const transactions = await Transaction.findAll({
+        where: {
+          status: 'APPROVED'
+        },
+        attributes: ['reference', ['amount_in_cents', 'value'], 'payment_method_type', ['created_at', 'date']],
+        include: [{
+          model: Donation,
+          required: true,
+          as: 'donation',
+        }],
+      });
+
+      return transactions;
+    } catch (error) {
+      errorLog('Error al traer los datos de la BD', error.message);
+    }
+
+  };
   
-  return { saveWompiTransaction };
+  return { saveWompiTransaction, getAllTransactions };
 };

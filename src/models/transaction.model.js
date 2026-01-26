@@ -1,3 +1,4 @@
+
 import { DataTypes, Model } from 'sequelize';
 
 import sequelize from '#config/database.config';
@@ -46,6 +47,14 @@ Transaction.init({
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
+  },
+  donation_id: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: {
+      model: 'donaciones',
+      key: 'id'
+    }
   },
   transaction_id: {
     type: DataTypes.STRING,

@@ -1,4 +1,6 @@
 import sequelize from '#config/database.config';
+import { setupAssociations } from '#models/associations';
+import { Donation } from '#models/donation.model';
 import { Transaction } from '#models/transaction.model';
 import { errorLog, sqlLog } from '#utils/logger.util';
 
@@ -16,6 +18,10 @@ export const initDatabase = async() => {
   try {
     await sequelize.authenticate();
     sqlLog('Conexión establecida con la base de datos');
+
+    setupAssociations();
+
+    await Donation.sync({ alter: false });
     await Transaction.sync({ alter: false });
   } catch (error) {
     errorLog('Error al iniciar conexión:', error.message);

@@ -1,3 +1,5 @@
+import { donationService } from '#services/index';
+
 /**
  * Factory que crea un controlador de pagos para procesar transacciones.
  * Este controlador:
@@ -22,8 +24,13 @@ export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
       // Verificamos integridad de la notificación
       validateChecksum(transactionData, req.wompiChecksum);
 
+      //Buscamos la donacion que corresponde a la transaccion
+      const { id: donation_id } = await donationService.getDonationByReference(transactionData.data.transaction.reference);
+ 
+      const dataTransaction = { donation_id, ...transactionData.data.transaction };
+
       // Guardamos la transacción en base de datos
-      const savedTransaction = await saveTransaction(transactionData.data.transaction);
+      const savedTransaction = await saveTransaction(dataTransaction);
       
       // Siempre respondemos 200 OK, incluso si no se pudo guardar
       res.status(200).json({
@@ -37,5 +44,22 @@ export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
     } catch (error) {
       next(error);
     }
+  };
+};
+
+export const listTransactions = (getAllTransactions) => {
+  return async(req, res, next) => {
+
+    try {
+      const transactions = await getAllTransactions();
+
+      return res.status(200).json({
+        success: true,
+        data: transactions
+      });
+    } catch (error) {
+      next(error);
+    }
+
   };
 };

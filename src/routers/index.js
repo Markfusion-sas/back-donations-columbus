@@ -14,6 +14,7 @@
 
 import { Router } from 'express';
 
+import donationRouter from '#routers/donation.router';
 import wompiTransactionRouter from '#routers/wompiTransaction.router';
 
 const router = Router();
@@ -25,5 +26,6 @@ const router = Router();
  * Wompi, incluyendo la creación, validación y verificación de transacciones.
  */
 router.use('/wompitransaction', wompiTransactionRouter);
+router.use('/donation', donationRouter);
 
 export default router;
