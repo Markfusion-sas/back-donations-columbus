@@ -1,5 +1,7 @@
 import sequelize from '#config/database.config';
 import { setupAssociations } from '#models/associations';
+import { BingoTable } from '#models/bingoTable.model';
+import { BingoTableOrder } from '#models/bingoTableOrder.model';
 import { Donation } from '#models/donation.model';
 import { Transaction } from '#models/transaction.model';
 import { errorLog, sqlLog } from '#utils/logger.util';
@@ -21,8 +23,22 @@ export const initDatabase = async() => {
 
     setupAssociations();
 
-    await Donation.sync({ alter: false });
     await Transaction.sync({ alter: false });
+    await Donation.sync({ alter: false });
+    await BingoTable.sync({ alter: false });
+    await BingoTableOrder.sync({ alter: false });
+
+    await BingoTable.findOrCreate({
+      where: { title: 'Tabla bingo' },
+      defaults: {
+        title: 'Tabla bingo',
+        image_url: 'https://postimg.cc/N5X569GQ',
+        stock: 500,
+        description: null,
+        price: 45000,
+        price_offer: 40000
+      }
+    });
   } catch (error) {
     errorLog('Error al iniciar conexión:', error.message);
     process.exit(1);
