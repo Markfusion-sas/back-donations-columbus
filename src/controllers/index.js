@@ -1,3 +1,5 @@
+import { bingoTableControllerFactory } from '#controllers/bingoTable.controller';
+import { bingoTableOrderControllerFactory } from '#controllers/bingoTableOrder.controller';
 import { donationControllerFactory } from '#controllers/donation.controller';
 import { signatureControllerFactory } from '#controllers/wompiSignature.controller';
 import { listTransactions, paymentControllerFactory } from '#controllers/wompiTransaction.controller';
@@ -34,3 +36,6 @@ export const listTransactionsController = listTransactions(
 );
 
 export const donationController = donationControllerFactory();
+
+export const bingoTableController = bingoTableControllerFactory();
+export const bingoTableOrderController = bingoTableOrderControllerFactory();

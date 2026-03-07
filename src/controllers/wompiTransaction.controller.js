@@ -1,21 +1,5 @@
-import { donationService } from '#services/index';
+import { bingoTableOrderService, donationService } from '#services/index';
 
-/**
- * Factory que crea un controlador de pagos para procesar transacciones.
- * Este controlador:
- *  1. Recibe la notificación del webhook de Wompi.
- *  2. Valida la integridad de los datos usando el checksum.
- *  3. Llama al servicio `saveWompiTransaction` para registrar la transacción.
- *  4. Si la DB falla, responde igualmente **200 OK** para evitar reintentos infinitos de Wompi.
- * @function paymentControllerFactory
- * @param {Function} validateChecksum - Función encargada de validar el checksum generado por Wompi.
- * @param {Function} saveTransaction - Función encargada de guardar la transacción en la base de datos.
- * @returns {Function} Middleware de Express para procesar la solicitud de pago.
- * @example
- * router.post('/', verifyWompiChecksum, validateRequestBody, validateWompiStatus,
- *   paymentControllerFactory(validateChecksum, saveWompiTransaction)
- * );
- */
 export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
   return async(req, res, next) => {
     try {
@@ -24,14 +8,35 @@ export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
       // Verificamos integridad de la notificación
       validateChecksum(transactionData, req.wompiChecksum);
 
-      //Buscamos la donacion que corresponde a la transaccion
-      const { id: donation_id } = await donationService.getDonationByReference(transactionData.data.transaction.reference);
- 
-      const dataTransaction = { donation_id, ...transactionData.data.transaction };
+      const reference = transactionData.data.transaction.reference;
+
+      // Detectamos el tipo por el prefijo del reference
+      let entity, transaction_type;
+
+      if (reference.startsWith('BINGO-')) {
+        entity = await bingoTableOrderService.getBingoTableOrderByReference(reference);
+        transaction_type = 'bingo_table_order';
+      } else {
+        entity = await donationService.getDonationByReference(reference);
+        transaction_type = 'donation';
+      }
+
+      if (!entity) {
+        const error = new Error(`No entity found for reference: ${reference}`);
+        error.statusCode = 404;
+        return next(error);
+      }
+
+      const dataTransaction = { transaction_type, ...transactionData.data.transaction };
 
       // Guardamos la transacción en base de datos
       const savedTransaction = await saveTransaction(dataTransaction);
-      
+
+      // Actualizamos la entidad con el transaction_id
+      if (savedTransaction) {
+        await entity.update({ transaction_id: savedTransaction.id });
+      }
+
       // Siempre respondemos 200 OK, incluso si no se pudo guardar
       res.status(200).json({
         success: true,
@@ -40,7 +45,7 @@ export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
           : 'Transaction processed but not saved in DB',
         transaction: savedTransaction || null
       });
-      
+
     } catch (error) {
       next(error);
     }
