@@ -1,16 +1,41 @@
+import { BingoTable } from './bingoTable.model.js';
+import { BingoTableOrder } from './bingoTableOrder.model.js';
 import { Donation } from './donation.model.js';
 import { Transaction } from './transaction.model.js';
 
 export const setupAssociations = () => {
-  
-  Donation.hasOne(Transaction, {
-    foreignKey: 'donation_id',
+
+  // Transaction → Donation (FK transaction_id en Donation)
+  Transaction.hasOne(Donation, {
+    foreignKey: 'transaction_id',
+    as: 'donation'
+  });
+
+  Donation.belongsTo(Transaction, {
+    foreignKey: 'transaction_id',
     as: 'transaction'
   });
 
-  Transaction.belongsTo(Donation, {
-    foreignKey: 'donation_id',
-    as: 'donation'
+  // Transaction → BingoTableOrder (FK transaction_id en BingoTableOrder)
+  Transaction.hasOne(BingoTableOrder, {
+    foreignKey: 'transaction_id',
+    as: 'bingoTableOrder'
+  });
+
+  BingoTableOrder.belongsTo(Transaction, {
+    foreignKey: 'transaction_id',
+    as: 'transaction'
+  });
+
+  // BingoTable → BingoTableOrder
+  BingoTable.hasMany(BingoTableOrder, {
+    foreignKey: 'bingo_table_id',
+    as: 'orders'
+  });
+
+  BingoTableOrder.belongsTo(BingoTable, {
+    foreignKey: 'bingo_table_id',
+    as: 'bingoTable'
   });
 
 };

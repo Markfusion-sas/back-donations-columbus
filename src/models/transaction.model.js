@@ -48,13 +48,9 @@ Transaction.init({
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
-  donation_id: {
-    type: DataTypes.UUID,
-    allowNull: true,
-    references: {
-      model: 'donaciones',
-      key: 'id'
-    }
+  transaction_type: {
+    type: DataTypes.ENUM('donation', 'bingo_table_order'),
+    allowNull: false,
   },
   transaction_id: {
     type: DataTypes.STRING,

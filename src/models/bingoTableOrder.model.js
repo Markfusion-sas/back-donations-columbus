@@ -2,22 +2,26 @@ import { DataTypes, Model } from 'sequelize';
 
 import sequelize from '#config/database.config';
 
-export class Donation extends Model {}
+export class BingoTableOrder extends Model {}
 
-Donation.init({
+BingoTableOrder.init({
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true
   },
+  bingo_table_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: 'bingo_tables',
+      key: 'id'
+    }
+  },
   reference: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true
-  },
-  donation_destination: {
-    type: DataTypes.STRING,
-    allowNull: false,
   },
   identity_document: {
     type: DataTypes.STRING,
@@ -37,13 +41,27 @@ Donation.init({
   },
   email: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
+    validate: {
+      isEmail: true
+    }
   },
   address: {
     type: DataTypes.STRING,
     allowNull: false
   },
-  donation_value: {
+  unit_price: {
+    type: DataTypes.FLOAT,
+    allowNull: false
+  },
+  quantity: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    validate: {
+      min: 1
+    }
+  },
+  total: {
     type: DataTypes.FLOAT,
     allowNull: false
   },
@@ -57,8 +75,8 @@ Donation.init({
   }
 }, {
   sequelize,
-  modelName: 'Donation',
-  tableName: 'donaciones',
+  modelName: 'BingoTableOrder',
+  tableName: 'bingo_table_orders',
   timestamps: true,
   underscored: true
 });
