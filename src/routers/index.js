@@ -14,6 +14,8 @@
 
 import { Router } from 'express';
 
+import bingoTableRouter from '#routers/bingoTable.router';
+import bingoTableOrderRouter from '#routers/bingoTableOrder.router';
 import donationRouter from '#routers/donation.router';
 import wompiTransactionRouter from '#routers/wompiTransaction.router';
 
@@ -27,5 +29,7 @@ const router = Router();
  */
 router.use('/wompitransaction', wompiTransactionRouter);
 router.use('/donation', donationRouter);
+router.use('/bingo-tables', bingoTableRouter);
+router.use('/bingo-table-orders', bingoTableOrderRouter);
 
 export default router;
