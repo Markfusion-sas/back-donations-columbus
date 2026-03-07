@@ -1,4 +1,4 @@
-export const mapDonation= (donationData = {}) => {
+export const mapDonation = (donationData = {}) => {
   const {
     reference,
     donation_destination,
@@ -12,7 +12,7 @@ export const mapDonation= (donationData = {}) => {
   } = donationData;
 
   return {
-    reference: reference || null,
+    reference,
     donation_destination,
     identity_document,
     name,

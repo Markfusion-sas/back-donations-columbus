@@ -1,7 +1,7 @@
 export const mapWompiTransaction = (wompiData = {}) => {
   const {
     id,
-    donation_id,
+    transaction_type,
     reference,
     amount_in_cents = 0,
     currency,
@@ -15,7 +15,7 @@ export const mapWompiTransaction = (wompiData = {}) => {
 
   return {
     transaction_id: id || null,
-    donation_id: donation_id || null,
+    transaction_type: transaction_type || null,
     reference: reference || null,
     amount_in_cents: Math.round(amount_in_cents / 100),
     currency: currency || null,
