@@ -1,4 +1,6 @@
+import { ORDER_STATUS } from '#config/constants.config';
 import { bingoTableOrderService, donationService } from '#services/index';
+import { errorLog } from '#utils/logger.util';
 
 export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
   return async(req, res, next) => {
@@ -8,7 +10,7 @@ export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
       // Verificamos integridad de la notificación
       validateChecksum(transactionData, req.wompiChecksum);
 
-      const reference = transactionData.data.transaction.reference;
+      const { reference } = transactionData.data.transaction;
 
       // Detectamos el tipo por el prefijo del reference
       let entity, transaction_type;
@@ -32,9 +34,20 @@ export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
       // Guardamos la transacción en base de datos
       const savedTransaction = await saveTransaction(dataTransaction);
 
-      // Actualizamos la entidad con el transaction_id
+      // Actualizamos la entidad con el transaction_id (y el estado si es una orden de bingo)
       if (savedTransaction) {
-        await entity.update({ transaction_id: savedTransaction.id });
+        const updateData = { transaction_id: savedTransaction.id };
+        if (transaction_type === 'bingo_table_order') updateData.status = ORDER_STATUS.APPROVED;
+        await entity.update(updateData);
+      }
+
+      // Descontamos stock solo cuando la transacción es aprobada
+      if (transaction_type === 'bingo_table_order') {
+        try {
+          await bingoTableOrderService.decrementBingoTableStock(entity);
+        } catch (stockError) {
+          errorLog('Error al descontar stock de bingo table:', stockError);
+        }
       }
 
       // Siempre respondemos 200 OK, incluso si no se pudo guardar
