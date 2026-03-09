@@ -65,6 +65,11 @@ BingoTableOrder.init({
     type: DataTypes.FLOAT,
     allowNull: false
   },
+  status: {
+    type: DataTypes.ENUM('pendiente', 'aprobado', 'declinado', 'error'),
+    allowNull: false,
+    defaultValue: 'pendiente'
+  },
   transaction_id: {
     type: DataTypes.UUID,
     allowNull: true,
