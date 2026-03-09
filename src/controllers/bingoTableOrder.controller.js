@@ -2,7 +2,7 @@ import { bingoTableOrderService } from '#services/index';
 
 export const bingoTableOrderControllerFactory = () => {
 
-  const createBingoTableOrder = async (req, res, next) => {
+  const createBingoTableOrder = async(req, res, next) => {
     try {
       const order = await bingoTableOrderService.createBingoTableOrder(req.body);
 
@@ -21,7 +21,7 @@ export const bingoTableOrderControllerFactory = () => {
     }
   };
 
-  const getAllBingoTableOrders = async (req, res, next) => {
+  const getAllBingoTableOrders = async(req, res, next) => {
     try {
       const orders = await bingoTableOrderService.getAllBingoTableOrders();
 
