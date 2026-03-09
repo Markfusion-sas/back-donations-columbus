@@ -10,23 +10,23 @@ export const bingoTableOrderServiceFactory = ({ BingoTable, BingoTableOrder, map
     const table = await BingoTable.findByPk(bingo_table_id);
 
     if (!table) {
-      const error = new Error('Bingo table not found');
+      const error = new Error('Tabla de bingo no encontrada');
       error.statusCode = 404;
       throw error;
     }
 
     if (table.stock < quantity) {
-      const error = new Error(`Insufficient stock. Available: ${table.stock}, requested: ${quantity}`);
+      const error = new Error(`Stock insuficiente. Disponible: ${table.stock}, solicitado: ${quantity}`);
       error.statusCode = 400;
       throw error;
     }
 
-    const unit_price =  quantity > 1 ? table.offer_price : table.price;
+    const unit_price =  quantity > 1 ? table.price_offer : table.price;
+    console.log(unit_price);
     const calculatedTotal = parseFloat((unit_price * quantity).toFixed(2));
     const receivedTotal = parseFloat(totalFromBody.toFixed(2));
-
     if (calculatedTotal !== receivedTotal) {
-      const error = new Error(`Total mismatch. Expected: ${calculatedTotal}, received: ${receivedTotal}`);
+      const error = new Error(`Total no coincide. Esperado: ${calculatedTotal}, recibido: ${receivedTotal}`);
       error.statusCode = 400;
       throw error;
     }
@@ -37,12 +37,29 @@ export const bingoTableOrderServiceFactory = ({ BingoTable, BingoTableOrder, map
 
     try {
       const order = await BingoTableOrder.create(dbData);
-      await table.decrement('stock', { by: quantity });
       return order;
     } catch (error) {
-      errorLog('Error creating bingo table order in DB:', error);
+      errorLog('Error al crear la orden de bingo en la BD:', error);
       throw error;
     }
+  };
+
+  const decrementBingoTableStock = async(order) => {
+    const table = await BingoTable.findByPk(order.bingo_table_id);
+
+    if (!table) {
+      const error = new Error(`Tabla de bingo no encontrada para la orden: ${order.id}`);
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (table.stock < order.quantity) {
+      const error = new Error(`Stock insuficiente para completar la orden. Disponible: ${table.stock}, requerido: ${order.quantity}`);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    await table.decrement('stock', { by: order.quantity });
   };
 
   const getAllBingoTableOrders = async() => {
@@ -55,6 +72,6 @@ export const bingoTableOrderServiceFactory = ({ BingoTable, BingoTableOrder, map
     return order;
   };
 
-  return { createBingoTableOrder, getAllBingoTableOrders, getBingoTableOrderByReference };
+  return { createBingoTableOrder, getAllBingoTableOrders, getBingoTableOrderByReference, decrementBingoTableStock };
 
 };

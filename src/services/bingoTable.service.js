@@ -9,7 +9,7 @@ export const bingoTableServiceFactory = ({ BingoTable, mapBingoTable }) => {
       const table = await BingoTable.create(dbData);
       return table;
     } catch (error) {
-      errorLog('Error creating bingo table in DB:', error);
+      errorLog('Error al crear la tabla de bingo en la BD:', error);
       throw error;
     }
   };
