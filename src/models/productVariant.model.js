@@ -2,32 +2,32 @@ import { DataTypes, Model } from 'sequelize';
 
 import sequelize from '#config/database.config';
 
-export class BingoTable extends Model {}
+export class ProductVariant extends Model {}
 
-BingoTable.init({
+ProductVariant.init({
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true
   },
-  title: {
+  product_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: 'productos',
+      key: 'id'
+    }
+  },
+  name: {
     type: DataTypes.STRING,
     allowNull: false
   },
-  image_url: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  stock: {
+  quantity: {
     type: DataTypes.INTEGER,
     allowNull: false,
     validate: {
-      min: 0
+      min: 1
     }
-  },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: true
   },
   price: {
     type: DataTypes.FLOAT,
@@ -35,15 +35,11 @@ BingoTable.init({
     validate: {
       min: 0.01
     }
-  },
-  price_offer: {
-    type: DataTypes.FLOAT,
-    allowNull: true,
   }
 }, {
   sequelize,
-  modelName: 'BingoTable',
-  tableName: 'bingo_tables',
+  modelName: 'ProductVariant',
+  tableName: 'variantes',
   timestamps: true,
   underscored: true
 });

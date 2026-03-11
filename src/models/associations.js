@@ -1,11 +1,13 @@
-import { BingoTable } from './bingoTable.model.js';
-import { BingoTableOrder } from './bingoTableOrder.model.js';
 import { Donation } from './donation.model.js';
+import { Order } from './order.model.js';
+import { OrderDetail } from './orderDetail.model.js';
+import { Product } from './product.model.js';
+import { ProductVariant } from './productVariant.model.js';
 import { Transaction } from './transaction.model.js';
 
 export const setupAssociations = () => {
 
-  // Transaction → Donation (FK transaction_id en Donation)
+  // Transaction → Donation
   Transaction.hasOne(Donation, {
     foreignKey: 'transaction_id',
     as: 'donation'
@@ -16,26 +18,48 @@ export const setupAssociations = () => {
     as: 'transaction'
   });
 
-  // Transaction → BingoTableOrder (FK transaction_id en BingoTableOrder)
-  Transaction.hasOne(BingoTableOrder, {
+  // Transaction → Order
+  Transaction.hasOne(Order, {
     foreignKey: 'transaction_id',
-    as: 'bingoTableOrder'
+    as: 'order'
   });
 
-  BingoTableOrder.belongsTo(Transaction, {
+  Order.belongsTo(Transaction, {
     foreignKey: 'transaction_id',
     as: 'transaction'
   });
 
-  // BingoTable → BingoTableOrder
-  BingoTable.hasMany(BingoTableOrder, {
-    foreignKey: 'bingo_table_id',
-    as: 'orders'
+  // Product → ProductVariant
+  Product.hasMany(ProductVariant, {
+    foreignKey: 'product_id',
+    as: 'variants'
   });
 
-  BingoTableOrder.belongsTo(BingoTable, {
-    foreignKey: 'bingo_table_id',
-    as: 'bingoTable'
+  ProductVariant.belongsTo(Product, {
+    foreignKey: 'product_id',
+    as: 'product'
+  });
+
+  // Order → OrderDetail
+  Order.hasMany(OrderDetail, {
+    foreignKey: 'order_id',
+    as: 'details'
+  });
+
+  OrderDetail.belongsTo(Order, {
+    foreignKey: 'order_id',
+    as: 'order'
+  });
+
+  // ProductVariant → OrderDetail
+  ProductVariant.hasMany(OrderDetail, {
+    foreignKey: 'product_variant_id',
+    as: 'orderDetails'
+  });
+
+  OrderDetail.belongsTo(ProductVariant, {
+    foreignKey: 'product_variant_id',
+    as: 'variant'
   });
 
 };

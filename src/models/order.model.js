@@ -2,21 +2,13 @@ import { DataTypes, Model } from 'sequelize';
 
 import sequelize from '#config/database.config';
 
-export class BingoTableOrder extends Model {}
+export class Order extends Model {}
 
-BingoTableOrder.init({
+Order.init({
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true
-  },
-  bingo_table_id: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    references: {
-      model: 'bingo_tables',
-      key: 'id'
-    }
   },
   reference: {
     type: DataTypes.STRING,
@@ -50,17 +42,6 @@ BingoTableOrder.init({
     type: DataTypes.STRING,
     allowNull: false
   },
-  unit_price: {
-    type: DataTypes.FLOAT,
-    allowNull: false
-  },
-  quantity: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    validate: {
-      min: 1
-    }
-  },
   total: {
     type: DataTypes.FLOAT,
     allowNull: false
@@ -80,8 +61,8 @@ BingoTableOrder.init({
   }
 }, {
   sequelize,
-  modelName: 'BingoTableOrder',
-  tableName: 'bingo_table_orders',
+  modelName: 'Order',
+  tableName: 'ordenes',
   timestamps: true,
   underscored: true
 });

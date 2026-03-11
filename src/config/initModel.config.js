@@ -1,21 +1,13 @@
 import sequelize from '#config/database.config';
 import { setupAssociations } from '#models/associations';
-import { BingoTable } from '#models/bingoTable.model';
-import { BingoTableOrder } from '#models/bingoTableOrder.model';
 import { Donation } from '#models/donation.model';
+import { Order } from '#models/order.model';
+import { OrderDetail } from '#models/orderDetail.model';
+import { Product } from '#models/product.model';
+import { ProductVariant } from '#models/productVariant.model';
 import { Transaction } from '#models/transaction.model';
 import { errorLog, sqlLog } from '#utils/logger.util';
 
-/**
- * @function initDatabase
- * @description Inicializa la conexión con la base de datos, verifica la autenticación
- *              y sincroniza el modelo `Transaction` con la base de datos.
- * @async
- * @returns {Promise<void>} No retorna ningún valor. Finaliza el proceso si ocurre un error.
- * @example
- * await initDatabase();
- * @throws {Error} Lanza un error si la conexión a la base de datos falla.
- */
 export const initDatabase = async() => {
   try {
     await sequelize.authenticate();
@@ -25,18 +17,38 @@ export const initDatabase = async() => {
 
     await Transaction.sync({ alter: false });
     await Donation.sync({ alter: false });
-    await BingoTable.sync({ alter: false });
-    await BingoTableOrder.sync({ alter: false });
+    await Product.sync({ alter: false });
+    await ProductVariant.sync({ alter: false });
+    await Order.sync({ alter: false });
+    await OrderDetail.sync({ alter: false });
 
-    await BingoTable.findOrCreate({
+    const [product] = await Product.findOrCreate({
       where: { title: 'Tabla bingo' },
       defaults: {
         title: 'Tabla bingo',
         image_url: 'https://postimg.cc/N5X569GQ',
         stock: 500,
-        description: null,
-        price: 45000,
-        price_offer: 40000
+        description: null
+      }
+    });
+
+    await ProductVariant.findOrCreate({
+      where: { product_id: product.id, name: 'Individual' },
+      defaults: {
+        product_id: product.id,
+        name: 'Individual',
+        quantity: 1,
+        price: 45000
+      }
+    });
+
+    await ProductVariant.findOrCreate({
+      where: { product_id: product.id, name: 'Par' },
+      defaults: {
+        product_id: product.id,
+        name: 'Par',
+        quantity: 2,
+        price: 80000
       }
     });
   } catch (error) {
