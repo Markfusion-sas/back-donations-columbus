@@ -1,35 +1,15 @@
-/**
- * Enrutador principal de la aplicación.
- * Este archivo centraliza y organiza todos los submódulos de rutas de la API.
- * Cada módulo es cargado dinámicamente para mantener la escalabilidad y la 
- * separación de responsabilidades.
- * Actualmente, maneja las rutas relacionadas con las transacciones de Wompi.
- * @module Routers/index
- * @requires express
- * @requires #routers/wompiTransaction.router
- * @example
- * import router from '#routers/index';
- * app.use('/api/v1', router);
- */
-
 import { Router } from 'express';
 
-import bingoTableRouter from '#routers/bingoTable.router';
-import bingoTableOrderRouter from '#routers/bingoTableOrder.router';
 import donationRouter from '#routers/donation.router';
+import orderRouter from '#routers/order.router';
+import productRouter from '#routers/product.router';
 import wompiTransactionRouter from '#routers/wompiTransaction.router';
 
 const router = Router();
 
-/**
- * Rutas principales.
- * Prefijo: `/api/v1/wompitransaction`
- * Este prefijo agrupa todos los endpoints relacionados con la integración de
- * Wompi, incluyendo la creación, validación y verificación de transacciones.
- */
 router.use('/wompitransaction', wompiTransactionRouter);
 router.use('/donation', donationRouter);
-router.use('/bingo-tables', bingoTableRouter);
-router.use('/bingo-table-orders', bingoTableOrderRouter);
+router.use('/products', productRouter);
+router.use('/orders', orderRouter);
 
 export default router;
