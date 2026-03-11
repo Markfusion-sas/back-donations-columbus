@@ -1,5 +1,5 @@
 import { ORDER_STATUS } from '#config/constants.config';
-import { bingoTableOrderService, donationService } from '#services/index';
+import { donationService, orderService } from '#services/index';
 import { errorLog } from '#utils/logger.util';
 
 export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
@@ -16,7 +16,7 @@ export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
       let entity, transaction_type;
 
       if (reference.startsWith('BINGO-')) {
-        entity = await bingoTableOrderService.getBingoTableOrderByReference(reference);
+        entity = await orderService.getOrderByReference(reference);
         transaction_type = 'bingo_table_order';
       } else {
         entity = await donationService.getDonationByReference(reference);
@@ -44,9 +44,9 @@ export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
       // Descontamos stock solo cuando la transacción es aprobada
       if (transaction_type === 'bingo_table_order') {
         try {
-          await bingoTableOrderService.decrementBingoTableStock(entity);
+          await orderService.decrementStock(entity);
         } catch (stockError) {
-          errorLog('Error al descontar stock de bingo table:', stockError);
+          errorLog('Error al descontar stock:', stockError);
         }
       }
 
