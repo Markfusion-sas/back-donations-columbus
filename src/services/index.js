@@ -1,16 +1,20 @@
-import { mapBingoTable } from '#mappers/bingoTable.mapper';
-import { mapBingoTableOrder } from '#mappers/bingoTableOrder.mapper';
 import { mapDonation } from '#mappers/donation.mapper';
+import { mapOrder } from '#mappers/order.mapper';
+import { mapOrderDetail } from '#mappers/orderDetail.mapper';
+import { mapProduct } from '#mappers/product.mapper';
 import { mapWompiTransaction } from '#mappers/wompiTransaction.mapper';
-import { BingoTable } from '#models/bingoTable.model';
-import { BingoTableOrder } from '#models/bingoTableOrder.model';
 import { Donation } from '#models/donation.model';
+import { Order } from '#models/order.model';
+import { OrderDetail } from '#models/orderDetail.model';
+import { Product } from '#models/product.model';
+import { ProductVariant } from '#models/productVariant.model';
 import { Transaction } from '#models/transaction.model';
-import { errorLog,log } from '#utils/logger.util';
+import { errorLog, log } from '#utils/logger.util';
 
-import { bingoTableServiceFactory } from './bingoTable.service.js';
-import { bingoTableOrderServiceFactory } from './bingoTableOrder.service.js';
 import { donationServiceFactory } from './donation.service.js';
+import { orderServiceFactory } from './order.service.js';
+import { productServiceFactory } from './product.service.js';
+import { productVariantServiceFactory } from './productVariant.service.js';
 import { wompiTransactionServiceFactory } from './wompiTransaction.service.js';
 
 export const wompiTransactionService = wompiTransactionServiceFactory({
@@ -27,13 +31,20 @@ export const donationService = donationServiceFactory({
   errorLog
 });
 
-export const bingoTableService = bingoTableServiceFactory({
-  BingoTable,
-  mapBingoTable
+export const productService = productServiceFactory({
+  Product,
+  mapProduct
 });
 
-export const bingoTableOrderService = bingoTableOrderServiceFactory({
-  BingoTable,
-  BingoTableOrder,
-  mapBingoTableOrder
+export const productVariantService = productVariantServiceFactory({
+  ProductVariant
+});
+
+export const orderService = orderServiceFactory({
+  Product,
+  ProductVariant,
+  Order,
+  OrderDetail,
+  mapOrder,
+  mapOrderDetail
 });
