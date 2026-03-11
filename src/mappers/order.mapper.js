@@ -1,6 +1,5 @@
-export const mapBingoTableOrder = (data = {}) => {
+export const mapOrder = (data = {}) => {
   const {
-    bingo_table_id,
     reference,
     identity_document,
     name,
@@ -8,13 +7,10 @@ export const mapBingoTableOrder = (data = {}) => {
     phone,
     email,
     address,
-    quantity,
-    unit_price,
     total
   } = data;
 
   return {
-    bingo_table_id,
     reference,
     identity_document,
     name,
@@ -22,8 +18,6 @@ export const mapBingoTableOrder = (data = {}) => {
     phone,
     email,
     address,
-    quantity,
-    unit_price,
     total
   };
 };
