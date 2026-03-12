@@ -24,5 +24,7 @@ export const {
   DB_PORT,
   DB_USER,
   DB_PASSWORD,
-  DB_NAME
+  DB_NAME,
+  RESEND_API_KEY,
+  RESEND_EMAIL
 } = process.env;

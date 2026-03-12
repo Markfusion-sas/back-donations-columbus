@@ -1,4 +1,5 @@
 import { ORDER_STATUS } from '#config/constants.config';
+import { sendOrderConfirmationEmail } from '#services/email.service';
 import { donationService, orderService } from '#services/index';
 import { errorLog } from '#utils/logger.util';
 
@@ -41,12 +42,19 @@ export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
         await entity.update(updateData);
       }
 
-      // Descontamos stock solo cuando la transacción es aprobada
+      // Descontamos stock y enviamos correo de confirmación cuando la transacción es aprobada
       if (transaction_type === 'bingo_table_order') {
         try {
           await orderService.decrementStock(entity);
         } catch (stockError) {
           errorLog('Error al descontar stock:', stockError);
+        }
+
+        try {
+          const { order, details } = await orderService.getOrderDetailsByOrderId(entity.id);
+          await sendOrderConfirmationEmail({ order, details });
+        } catch (emailError) {
+          errorLog('Error al enviar correo de confirmación:', emailError);
         }
       }
 
