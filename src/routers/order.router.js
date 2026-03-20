@@ -7,6 +7,6 @@ const router = Router();
 
 router.post('/', validateOrderRequest, orderController.createOrder);
 //router.get('/', orderController.getAllOrders);
-router.get('/:id/details', orderController.getOrderDetails);
+//router.get('/:id/details', orderController.getOrderDetails);
 
 export default router;
