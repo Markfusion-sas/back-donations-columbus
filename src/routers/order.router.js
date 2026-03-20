@@ -6,7 +6,7 @@ import { validateOrderRequest } from '#middlewares/validateOrderRequest.middlewa
 const router = Router();
 
 router.post('/', validateOrderRequest, orderController.createOrder);
-router.get('/', orderController.getAllOrders);
+//router.get('/', orderController.getAllOrders);
 router.get('/:id/details', orderController.getOrderDetails);
 
 export default router;
