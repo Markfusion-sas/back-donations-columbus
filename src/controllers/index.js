@@ -1,5 +1,6 @@
 import { donationControllerFactory } from '#controllers/donation.controller';
 import { orderControllerFactory } from '#controllers/order.controller';
+import { paymentSourceControllerFactory } from '#controllers/paymentSource.controller';
 import { productControllerFactory } from '#controllers/product.controller';
 import { signatureControllerFactory } from '#controllers/wompiSignature.controller';
 import { listTransactions, paymentControllerFactory } from '#controllers/wompiTransaction.controller';
@@ -23,3 +24,4 @@ export const listTransactionsController = listTransactions(
 export const donationController = donationControllerFactory();
 export const productController = productControllerFactory();
 export const orderController = orderControllerFactory();
+export const paymentSourceController = paymentSourceControllerFactory();
