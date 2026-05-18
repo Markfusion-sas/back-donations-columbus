@@ -13,6 +13,10 @@
  * @constant {string} DB_USER     - Usuario para la conexión a PostgreSQL.
  * @constant {string} DB_PASSWORD - Contraseña para PostgreSQL.
  * @constant {string} DB_NAME     - Nombre de la base de datos.
+ * Wompi API:
+ * @constant {string} WOMPI_PRIVATE_KEY - Llave privada de Wompi (solo backend, nunca exponer al cliente).
+ * @constant {string} WOMPI_PUBLIC_KEY  - Llave pública de Wompi (usada por el frontend).
+ * @constant {string} WOMPI_API_URL     - URL base de la API de Wompi.
  */
 export const {
   FRONTEND_URL,
@@ -26,5 +30,8 @@ export const {
   DB_PASSWORD,
   DB_NAME,
   RESEND_API_KEY,
-  RESEND_EMAIL
+  RESEND_EMAIL,
+  WOMPI_PRIVATE_KEY,
+  WOMPI_PUBLIC_KEY,
+  WOMPI_API_URL = 'https://api.wompi.co/v1'
 } = process.env;
