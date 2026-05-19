@@ -110,6 +110,70 @@ export const paymentSourceControllerFactory = () => {
     }
   };
 
-  return { registerNequi, verify, cancel, listCharges };
+  const registerCard = async (req, res, next) => {
+    try {
+      const {
+        token,
+        customer_email,
+        password,
+        acceptance_token,
+        accept_personal_auth,
+        name,
+        last_name,
+        identity_document,
+        phone,
+        address,
+        donation_destination,
+        donation_value,
+        billing_frequency,
+        brand,
+        last_four,
+        exp_month,
+        exp_year,
+        card_holder
+      } = req.body;
+
+      const paymentSource = await paymentSourceService.registerCard({
+        token,
+        customer_email,
+        password,
+        acceptance_token,
+        accept_personal_auth,
+        name,
+        last_name,
+        identity_document,
+        phone,
+        address,
+        donation_destination,
+        donation_value,
+        billing_frequency,
+        brand,
+        last_four,
+        exp_month,
+        exp_year,
+        card_holder
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          wompi_source_id: paymentSource.wompi_source_id,
+          type: paymentSource.type,
+          brand: paymentSource.brand,
+          last_four: paymentSource.last_four,
+          exp_month: paymentSource.exp_month,
+          exp_year: paymentSource.exp_year,
+          billing_frequency: paymentSource.billing_frequency,
+          next_billing_date: paymentSource.next_billing_date,
+          status: paymentSource.status
+        }
+      });
+
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  return { registerNequi, registerCard, verify, cancel, listCharges };
 
 };
