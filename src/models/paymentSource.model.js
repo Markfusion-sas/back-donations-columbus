@@ -18,8 +18,48 @@ export const PaymentSource = sequelize.define('PaymentSource', {
     type: DataTypes.STRING,
     allowNull: false
   },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
   type: {
     type: DataTypes.ENUM(...Object.values(PAYMENT_SOURCE_TYPE)),
+    allowNull: false
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  last_name: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  identity_document: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  address: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  donation_destination: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  donation_value: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  billing_frequency: {
+    type: DataTypes.ENUM('weekly', 'biweekly', 'monthly'),
+    allowNull: false
+  },
+  next_billing_date: {
+    type: DataTypes.DATEONLY,
     allowNull: false
   },
   brand: {
