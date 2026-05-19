@@ -1,8 +1,10 @@
 import { Donation } from './donation.model.js';
 import { Order } from './order.model.js';
 import { OrderDetail } from './orderDetail.model.js';
+import { PaymentSource } from './paymentSource.model.js';
 import { Product } from './product.model.js';
 import { ProductVariant } from './productVariant.model.js';
+import { RecurringCharge } from './recurringCharge.model.js';
 import { Transaction } from './transaction.model.js';
 
 export const setupAssociations = () => {
@@ -60,6 +62,28 @@ export const setupAssociations = () => {
   OrderDetail.belongsTo(ProductVariant, {
     foreignKey: 'product_variant_id',
     as: 'variant'
+  });
+
+  // PaymentSource → RecurringCharge
+  PaymentSource.hasMany(RecurringCharge, {
+    foreignKey: 'payment_source_id',
+    as: 'charges'
+  });
+
+  RecurringCharge.belongsTo(PaymentSource, {
+    foreignKey: 'payment_source_id',
+    as: 'paymentSource'
+  });
+
+  // Transaction → RecurringCharge
+  Transaction.hasOne(RecurringCharge, {
+    foreignKey: 'transaction_id',
+    as: 'recurringCharge'
+  });
+
+  RecurringCharge.belongsTo(Transaction, {
+    foreignKey: 'transaction_id',
+    as: 'transaction'
   });
 
 };

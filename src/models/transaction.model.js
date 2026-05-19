@@ -49,7 +49,7 @@ Transaction.init({
     primaryKey: true,
   },
   transaction_type: {
-    type: DataTypes.ENUM('donation', 'bingo_table_order'),
+    type: DataTypes.ENUM('donation', 'bingo_table_order', 'recurring'),
     allowNull: false,
   },
   transaction_id: {
