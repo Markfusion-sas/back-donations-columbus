@@ -1,4 +1,5 @@
 import { nequiRegisterSchema } from '#schemas/nequiRegister.schema';
+import { paymentSourceVerifySchema } from '#schemas/paymentSourceVerify.schema';
 
 const validate = (schema) => (req, res, next) => {
   const { error } = schema.validate(req.body, { abortEarly: true });
@@ -14,3 +15,4 @@ const validate = (schema) => (req, res, next) => {
 };
 
 export const validateNequiRegisterRequest = validate(nequiRegisterSchema);
+export const validatePaymentSourceVerifyRequest = validate(paymentSourceVerifySchema);
