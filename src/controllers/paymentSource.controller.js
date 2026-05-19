@@ -94,6 +94,22 @@ export const paymentSourceControllerFactory = () => {
     }
   };
 
-  return { registerNequi, verify, cancel };
+  const listCharges = async (req, res, next) => {
+    try {
+      const { customer_email, status } = req.query;
+
+      const charges = await paymentSourceService.getAllCharges({ customer_email, status });
+
+      return res.status(200).json({
+        success: true,
+        data: charges
+      });
+
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  return { registerNequi, verify, cancel, listCharges };
 
 };

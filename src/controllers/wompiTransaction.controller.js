@@ -1,6 +1,6 @@
 import { ORDER_STATUS } from '#config/constants.config';
 import { sendOrderConfirmationEmail } from '#services/email.service';
-import { donationService, orderService } from '#services/index';
+import { donationService, orderService, paymentSourceService } from '#services/index';
 import { errorLog } from '#utils/logger.util';
 
 export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
@@ -19,6 +19,9 @@ export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
       if (reference.startsWith('BINGO-')) {
         entity = await orderService.getOrderByReference(reference);
         transaction_type = 'bingo_table_order';
+      } else if (reference.startsWith('REC-')) {
+        entity = await paymentSourceService.getChargeByReference(reference);
+        transaction_type = 'recurring';
       } else {
         entity = await donationService.getDonationByReference(reference);
         transaction_type = 'donation';
@@ -35,11 +38,19 @@ export const paymentControllerFactory = (validateChecksum, saveTransaction) => {
       // Guardamos la transacción en base de datos
       const savedTransaction = await saveTransaction(dataTransaction);
 
-      // Actualizamos la entidad con el transaction_id (y el estado si es una orden de bingo)
+      // Actualizamos la entidad según el tipo
       if (savedTransaction) {
-        const updateData = { transaction_id: savedTransaction.id };
-        if (transaction_type === 'bingo_table_order') updateData.status = ORDER_STATUS.APPROVED;
-        await entity.update(updateData);
+        if (transaction_type === 'bingo_table_order') {
+          await entity.update({ transaction_id: savedTransaction.id, status: ORDER_STATUS.APPROVED });
+        } else if (transaction_type === 'recurring') {
+          const { status } = transactionData.data.transaction;
+          await entity.update({
+            transaction_id: savedTransaction.id,
+            status: status === 'APPROVED' ? 'approved' : 'declined'
+          });
+        } else {
+          await entity.update({ transaction_id: savedTransaction.id });
+        }
       }
 
       // Descontamos stock y enviamos correo de confirmación cuando la transacción es aprobada
