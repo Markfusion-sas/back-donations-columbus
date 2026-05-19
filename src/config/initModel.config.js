@@ -4,6 +4,7 @@ import { Donation } from '#models/donation.model';
 import { Order } from '#models/order.model';
 import { OrderDetail } from '#models/orderDetail.model';
 import { PaymentSource } from '#models/paymentSource.model';
+import { RecurringCharge } from '#models/recurringCharge.model';
 import { Product } from '#models/product.model';
 import { ProductVariant } from '#models/productVariant.model';
 import { Transaction } from '#models/transaction.model';
@@ -23,6 +24,7 @@ export const initDatabase = async() => {
     await Order.sync({ alter: false });
     await OrderDetail.sync({ alter: false });
     await PaymentSource.sync({ alter: false });
+    await RecurringCharge.sync({ alter: false });
 
     const [product] = await Product.findOrCreate({
       where: { title: 'Tabla bingo' },
