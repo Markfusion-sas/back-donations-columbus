@@ -43,24 +43,35 @@ export const getNequiTokenStatus = async (token_id) => {
 };
 
 export const chargePaymentSource = async ({ payment_source_id, type, phone_number, amount_in_cents, currency, reference, customer_email, acceptance_token }) => {
-  const payment_method = { type, payment_source_id };
+  let body;
 
   if (type === 'CARD') {
-    payment_method.installments = 1;
-    payment_method.recurrent = true;
+    body = {
+      amount_in_cents,
+      currency,
+      customer_email,
+      reference,
+      acceptance_token,
+      payment_source_id,
+      payment_method: {
+        installments: 1
+      }
+    };
+  } else {
+    body = {
+      amount_in_cents,
+      currency,
+      customer_email,
+      reference,
+      acceptance_token,
+      payment_method: {
+        type,
+        payment_source_id,
+        ...(type === 'NEQUI' && { phone_number })
+      }
+    };
   }
 
-  if (type === 'NEQUI') {
-    payment_method.phone_number = phone_number;
-  }
-
-  const { data } = await wompiPrivateClient.post('/transactions', {
-    amount_in_cents,
-    currency,
-    customer_email,
-    reference,
-    acceptance_token,
-    payment_method
-  });
+  const { data } = await wompiPrivateClient.post('/transactions', body);
   return data.data;
 };
