@@ -17,14 +17,14 @@ export const initDatabase = async() => {
 
     setupAssociations();
 
-    await Transaction.sync({ alter: false });
+    await Transaction.sync({ alter: true });
     await Donation.sync({ alter: false });
     await Product.sync({ alter: false });
     await ProductVariant.sync({ alter: false });
     await Order.sync({ alter: false });
     await OrderDetail.sync({ alter: false });
-    await PaymentSource.sync({ alter: false });
-    await RecurringCharge.sync({ alter: false });
+    await PaymentSource.sync({ alter: true });
+    await RecurringCharge.sync({ alter: true });
 
     const [product] = await Product.findOrCreate({
       where: { title: 'Tabla bingo' },

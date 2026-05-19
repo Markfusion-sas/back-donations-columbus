@@ -35,5 +35,6 @@ export const {
   WOMPI_PUBLIC_KEY,
   WOMPI_API_URL = 'https://api.wompi.co/v1',
   REDIS_HOST = 'localhost',
-  REDIS_PORT = 6379
+  REDIS_PORT = 6379,
+  REDIS_URL
 } = process.env;
