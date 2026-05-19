@@ -1,3 +1,4 @@
+import { cardRegisterSchema } from '#schemas/cardRegister.schema';
 import { nequiRegisterSchema } from '#schemas/nequiRegister.schema';
 import { paymentSourceVerifySchema } from '#schemas/paymentSourceVerify.schema';
 
@@ -15,4 +16,5 @@ const validate = (schema) => (req, res, next) => {
 };
 
 export const validateNequiRegisterRequest = validate(nequiRegisterSchema);
+export const validateCardRegisterRequest = validate(cardRegisterSchema);
 export const validatePaymentSourceVerifyRequest = validate(paymentSourceVerifySchema);
