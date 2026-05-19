@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { Op } from 'sequelize';
 
 import { PAYMENT_SOURCE_STATUS, PAYMENT_SOURCE_TYPE } from '#config/constants.config';
 import { errorLog } from '#utils/logger.util';
@@ -16,7 +17,7 @@ const calculateNextBillingDate = (frequency) => {
   return date.toISOString().split('T')[0];
 };
 
-export const paymentSourceServiceFactory = ({ PaymentSource, mapPaymentSource }) => {
+export const paymentSourceServiceFactory = ({ PaymentSource, RecurringCharge, mapPaymentSource }) => {
 
   const registerNequi = async ({ token, customer_email, password, acceptance_token, accept_personal_auth, name, last_name, identity_document, phone, address, donation_destination, donation_value, billing_frequency }) => {
     const wompiResponse = await createPaymentSource({
@@ -91,6 +92,35 @@ export const paymentSourceServiceFactory = ({ PaymentSource, mapPaymentSource })
     return paymentSource;
   };
 
-  return { registerNequi, verify, cancel };
+  const getChargeByReference = async (reference) => {
+    const charge = await RecurringCharge.findOne({ where: { reference } });
+    return charge;
+  };
+
+  const getAllCharges = async ({ customer_email, status } = {}) => {
+    const where = {};
+
+    if (status) where.status = status;
+
+    if (customer_email) {
+      const source = await PaymentSource.findOne({ where: { customer_email } });
+      if (!source) return [];
+      where.payment_source_id = source.id;
+    }
+
+    const charges = await RecurringCharge.findAll({
+      where,
+      include: [{
+        model: PaymentSource,
+        as: 'paymentSource',
+        attributes: ['customer_email', 'name', 'last_name', 'type', 'donation_destination', 'billing_frequency']
+      }],
+      order: [['created_at', 'DESC']]
+    });
+
+    return charges;
+  };
+
+  return { registerNequi, verify, cancel, getChargeByReference, getAllCharges };
 
 };
