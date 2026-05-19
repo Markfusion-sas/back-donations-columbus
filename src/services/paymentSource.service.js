@@ -121,6 +121,49 @@ export const paymentSourceServiceFactory = ({ PaymentSource, RecurringCharge, ma
     return charges;
   };
 
-  return { registerNequi, verify, cancel, getChargeByReference, getAllCharges };
+  const registerCard = async ({ token, customer_email, password, acceptance_token, accept_personal_auth, name, last_name, identity_document, phone, address, donation_destination, donation_value, billing_frequency, brand, last_four, exp_month, exp_year, card_holder }) => {
+    const wompiResponse = await createPaymentSource({
+      type: PAYMENT_SOURCE_TYPE.CARD,
+      token,
+      customer_email,
+      acceptance_token,
+      accept_personal_auth
+    });
+
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    const next_billing_date = calculateNextBillingDate(billing_frequency);
+
+    const dbData = mapPaymentSource({
+      wompiResponse,
+      customerData: {
+        customer_email,
+        password: hashedPassword,
+        name,
+        last_name,
+        identity_document,
+        phone,
+        address,
+        donation_destination,
+        donation_value,
+        billing_frequency,
+        next_billing_date,
+        brand,
+        last_four,
+        exp_month,
+        exp_year,
+        card_holder
+      }
+    });
+
+    try {
+      const paymentSource = await PaymentSource.create(dbData);
+      return paymentSource;
+    } catch (error) {
+      errorLog('Error al guardar fuente de pago de tarjeta en DB:', error);
+      throw error;
+    }
+  };
+
+  return { registerNequi, registerCard, verify, cancel, getChargeByReference, getAllCharges };
 
 };
