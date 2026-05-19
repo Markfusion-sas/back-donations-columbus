@@ -1,10 +1,12 @@
 import { Router } from 'express';
 
 import { paymentSourceController } from '#controllers/index';
-import { validateNequiRegisterRequest } from '#middlewares/validateTokenizationRequest.middleware';
+import { validateNequiRegisterRequest, validatePaymentSourceVerifyRequest } from '#middlewares/validateTokenizationRequest.middleware';
 
 const router = Router();
 
 router.post('/nequi/register', validateNequiRegisterRequest, paymentSourceController.registerNequi);
+router.post('/verify', validatePaymentSourceVerifyRequest, paymentSourceController.verify);
+router.delete('/:id', paymentSourceController.cancel);
 
 export default router;

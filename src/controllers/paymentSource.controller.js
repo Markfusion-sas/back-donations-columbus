@@ -4,13 +4,36 @@ export const paymentSourceControllerFactory = () => {
 
   const registerNequi = async (req, res, next) => {
     try {
-      const { token, customer_email, acceptance_token, accept_personal_auth } = req.body;
+      const {
+        token,
+        customer_email,
+        password,
+        acceptance_token,
+        accept_personal_auth,
+        name,
+        last_name,
+        identity_document,
+        phone,
+        address,
+        donation_destination,
+        donation_value,
+        billing_frequency
+      } = req.body;
 
       const paymentSource = await paymentSourceService.registerNequi({
         token,
         customer_email,
+        password,
         acceptance_token,
-        accept_personal_auth
+        accept_personal_auth,
+        name,
+        last_name,
+        identity_document,
+        phone,
+        address,
+        donation_destination,
+        donation_value,
+        billing_frequency
       });
 
       return res.status(200).json({
@@ -19,6 +42,8 @@ export const paymentSourceControllerFactory = () => {
           wompi_source_id: paymentSource.wompi_source_id,
           type: paymentSource.type,
           phone_number: paymentSource.phone_number,
+          billing_frequency: paymentSource.billing_frequency,
+          next_billing_date: paymentSource.next_billing_date,
           status: paymentSource.status
         }
       });
@@ -28,6 +53,47 @@ export const paymentSourceControllerFactory = () => {
     }
   };
 
-  return { registerNequi };
+  const verify = async (req, res, next) => {
+    try {
+      const { customer_email, password } = req.body;
+
+      const paymentSource = await paymentSourceService.verify({ customer_email, password });
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          id: paymentSource.id,
+          type: paymentSource.type,
+          phone_number: paymentSource.phone_number,
+          donation_value: paymentSource.donation_value,
+          donation_destination: paymentSource.donation_destination,
+          billing_frequency: paymentSource.billing_frequency,
+          next_billing_date: paymentSource.next_billing_date,
+          status: paymentSource.status
+        }
+      });
+
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  const cancel = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+
+      await paymentSourceService.cancel(id);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Donación recurrente cancelada exitosamente'
+      });
+
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  return { registerNequi, verify, cancel };
 
 };
