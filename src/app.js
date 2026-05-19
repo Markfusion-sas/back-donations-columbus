@@ -6,8 +6,12 @@ import { initDatabase } from '#config/initModel.config';
 import { cors } from '#middlewares/cors.middleware';
 import { errorHandler } from '#middlewares/errorHandler.middleware';
 import { responseHandler } from '#middlewares/responseHandler.middleware';
+import { PaymentSource } from '#models/paymentSource.model';
+import { billingQueue } from '#queues/billing.queue';
 import routes from '#routers/index';
+import { scheduleBillingJobs } from '#schedulers/billing.scheduler';
 import { log } from '#utils/logger.util';
+import { startBillingWorker } from '#workers/billing.worker';
 
 const app = express();
 
@@ -105,9 +109,19 @@ app.use(errorHandler);
  * @returns {Promise<void>}
  */
 if (basename(import.meta.url) === basename(process.argv[1]) && NODE_ENV !== 'test') {
-  initDatabase().then(() => {
+  initDatabase().then(async () => {
+    await startBillingWorker(PaymentSource);
+
+    await scheduleBillingJobs(PaymentSource);
+
+    await billingQueue.add(
+      'daily-billing-check',
+      { type: 'scheduled' },
+      { repeat: { pattern: '0 8 * * *' } }
+    );
+
     app.listen(PORT, () => {
-      log((`Servidor Express corriendo en http://localhost:${PORT}\n`));
+      log(`Servidor Express corriendo en http://localhost:${PORT}\n`);
     });
   });
 }

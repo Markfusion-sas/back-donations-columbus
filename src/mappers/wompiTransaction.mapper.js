@@ -10,7 +10,7 @@ export const mapWompiTransaction = (wompiData = {}) => {
     customer_email = null,
     redirect_url = null,
     payment_method = {},
-    customer_data = {}
+    customer_data
   } = wompiData;
 
   return {
@@ -24,8 +24,8 @@ export const mapWompiTransaction = (wompiData = {}) => {
     last_four: payment_method.last_four || null,
     status: status || null,
     customer_email,
-    full_name: customer_data.full_name || null,
-    phone_number: customer_data.phone_number || null,
+    full_name: customer_data?.full_name || null,
+    phone_number: customer_data?.phone_number || null,
     legal_id: payment_method.user_legal_id || null,
     legal_id_type: payment_method.user_legal_id_type || null,
     redirect_url
