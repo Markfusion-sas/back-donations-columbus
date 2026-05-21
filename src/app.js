@@ -108,8 +108,8 @@ app.use(errorHandler);
  * @function startServer
  * @returns {Promise<void>}
  */
-if (basename(import.meta.url) === basename(process.argv[1]) && NODE_ENV !== 'test') {
-  initDatabase().then(async () => {
+if (NODE_ENV !== 'test') {
+  initDatabase().then(async() => {
     await startBillingWorker(PaymentSource);
 
     await scheduleBillingJobs(PaymentSource);
