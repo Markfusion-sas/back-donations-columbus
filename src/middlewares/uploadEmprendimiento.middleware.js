@@ -4,7 +4,7 @@ import multer from 'multer';
 import { extname, join } from 'path';
 
 import { PUBLIC_URL, UPLOADS_DIR } from '#config/environment.config';
-import { mapEmprendimiento } from '#mappers/emprendimiento.mapper';
+import { mapEmprendimiento, toArray } from '#mappers/emprendimiento.mapper';
 
 const MAX_LOGO_MB = 10;
 const MAX_PHOTO_MB = 5;
@@ -86,6 +86,9 @@ export const uploadEmprendimiento = (req, res, next) => {
       logo: logoFile ? publicUrl(req, logoFile.filename) : undefined,
       fotos: fotoFiles.map((f) => publicUrl(req, f.filename))
     });
+
+    // Edición: URLs de fotos ya guardadas que el admin decidió conservar
+    req.fotosExistentes = toArray(req.body?.fotos_existentes ?? req.body?.['fotos_existentes[]']);
 
     next();
   });

@@ -56,6 +56,24 @@ export const emprendimientoControllerFactory = () => {
     }
   };
 
+  /** PUT /emprendimientos/:id — edición desde el panel admin (multipart/form-data) */
+  const updateEmprendimiento = async(req, res, next) => {
+    try {
+      const emprendimiento = await emprendimientoService.updateEmprendimiento(
+        req.params.id,
+        req.emprendimiento,
+        req.fotosExistentes
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: emprendimiento
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   /** PATCH /emprendimientos/:id/aprobar */
   const aprobarEmprendimiento = async(req, res, next) => {
     try {
@@ -86,6 +104,7 @@ export const emprendimientoControllerFactory = () => {
 
   return {
     createEmprendimiento,
+    updateEmprendimiento,
     getEmprendimientos,
     getEmprendimientoById,
     aprobarEmprendimiento,

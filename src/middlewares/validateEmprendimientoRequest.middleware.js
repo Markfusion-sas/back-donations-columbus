@@ -1,4 +1,4 @@
-import { emprendimientoSchema, rechazoSchema } from '#schemas/emprendimiento.schema';
+import { emprendimientoSchema, emprendimientoUpdateSchema, rechazoSchema } from '#schemas/emprendimiento.schema';
 
 const validateWith = (schema, getData) => (req, res, next) => {
   const { error } = schema.validate(getData(req), { abortEarly: true });
@@ -23,3 +23,8 @@ export const validateEmprendimientoRequest = validateWith(emprendimientoSchema, 
  * Valida el body de rechazo ({ motivo }).
  */
 export const validateRechazoRequest = validateWith(rechazoSchema, (req) => req.body ?? {});
+
+/**
+ * Valida la edición (`req.emprendimiento`); logo y autorización son opcionales.
+ */
+export const validateEmprendimientoUpdateRequest = validateWith(emprendimientoUpdateSchema, (req) => req.emprendimiento);

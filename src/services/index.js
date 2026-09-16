@@ -1,3 +1,7 @@
+import { unlink } from 'fs/promises';
+import { join } from 'path';
+
+import { UPLOADS_DIR } from '#config/environment.config';
 import { mapDonation } from '#mappers/donation.mapper';
 import { mapEmprendimientoResponse } from '#mappers/emprendimiento.mapper';
 import { mapOrder } from '#mappers/order.mapper';
@@ -70,9 +74,23 @@ export const paymentSourceService = paymentSourceServiceFactory({
   mapPaymentSource
 });
 
+// Borra archivos de /api/v1/uploads/... que ya no usa ningún registro
+const removeUploadedFiles = async(urls = []) => {
+  await Promise.all(urls.map(async(url) => {
+    const match = /\/api\/v1\/uploads\/([\w-]+\/[\w.-]+)$/.exec(url ?? '');
+    if (!match) return;
+    try {
+      await unlink(join(UPLOADS_DIR, match[1]));
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+  }));
+};
+
 export const emprendimientoService = emprendimientoServiceFactory({
   Emprendimiento,
   mapEmprendimientoResponse,
+  removeFiles: removeUploadedFiles,
   notifyNewEmprendimiento: sendNewEmprendimientoAlert,
   notifyApproved: sendEmprendimientoApprovedEmail,
   notifyRejected: sendEmprendimientoRejectedEmail,

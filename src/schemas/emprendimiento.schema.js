@@ -77,3 +77,11 @@ export const emprendimientoSchema = Joi.object({
 export const rechazoSchema = Joi.object({
   motivo: requiredText(1000, 'El motivo del rechazo')
 });
+
+/**
+ * Edición desde el panel admin: el logo solo viene si se reemplaza y la
+ * autorización de datos no se vuelve a pedir.
+ */
+export const emprendimientoUpdateSchema = emprendimientoSchema
+  .fork(['logo'], (field) => field.optional())
+  .fork(['acepta_datos'], () => Joi.any().optional());
