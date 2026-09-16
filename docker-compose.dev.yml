@@ -1,0 +1,23 @@
+# Servicios de apoyo para desarrollo local (no se usa en producción)
+#   docker compose -f docker-compose.dev.yml up -d
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: columbus-postgres
+    environment:
+      POSTGRES_USER: columbus
+      POSTGRES_PASSWORD: columbus
+      POSTGRES_DB: columbus_dev
+    ports:
+      - "5440:5432"
+    volumes:
+      - columbus-pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: columbus-redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  columbus-pgdata:

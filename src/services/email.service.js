@@ -224,8 +224,11 @@ const sendEmail = async({ to, subject, html, tag }) => {
       subject,
       html
     });
-    log(`Correo "${tag}" enviado a ${to}`);
-    log('Resend response:', JSON.stringify(result));
+    if (result?.error) {
+      errorLog(`Resend rechazó el correo "${tag}" a ${to}:`, JSON.stringify(result.error));
+      return;
+    }
+    log(`Correo "${tag}" enviado a ${to}`, JSON.stringify(result?.data ?? result));
   } catch (error) {
     errorLog(`Error al enviar correo "${tag}" a ${to}:`, error?.message ?? error);
     errorLog('Detalle Resend:', JSON.stringify(error));
