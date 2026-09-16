@@ -1,4 +1,5 @@
 import { donationControllerFactory } from '#controllers/donation.controller';
+import { emprendimientoControllerFactory } from '#controllers/emprendimiento.controller';
 import { orderControllerFactory } from '#controllers/order.controller';
 import { paymentSourceControllerFactory } from '#controllers/paymentSource.controller';
 import { productControllerFactory } from '#controllers/product.controller';
@@ -25,3 +26,4 @@ export const donationController = donationControllerFactory();
 export const productController = productControllerFactory();
 export const orderController = orderControllerFactory();
 export const paymentSourceController = paymentSourceControllerFactory();
+export const emprendimientoController = emprendimientoControllerFactory();

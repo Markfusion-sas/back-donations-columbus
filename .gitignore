@@ -8,6 +8,7 @@ logs/
 # dotenv environment variable files
 .env
 .env.*
+!.env.example
 
 # Runtime data
 *.pid
@@ -60,3 +61,5 @@ web_modules/
 # Sistema operativo
 .DS_Store
 Thumbs.db
+# Archivos subidos (logos y fotos de emprendimientos)
+uploads/

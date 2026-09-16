@@ -1,7 +1,7 @@
 import express from 'express';
 import { basename } from 'path';
 
-import { FRONTEND_URL, NODE_ENV, PORT } from '#config/environment.config';
+import { FRONTEND_URL, NODE_ENV, PORT, UPLOADS_DIR } from '#config/environment.config';
 import { initDatabase } from '#config/initModel.config';
 import { cors } from '#middlewares/cors.middleware';
 import { errorHandler } from '#middlewares/errorHandler.middleware';
@@ -76,6 +76,14 @@ app.use((req, res, next) => {
 
   next();
 });
+
+/**
+ * Archivos subidos (logos y fotos del directorio comercial).
+ * Se sirven bajo el mismo prefijo de la API para pasar por el mismo proxy.
+ * @example
+ * GET /api/v1/uploads/emprendimientos/logo-<uuid>.png
+ */
+app.use('/api/v1/uploads', express.static(UPLOADS_DIR, { maxAge: '7d', index: false }));
 
 /**
  * Rutas principales de la API.

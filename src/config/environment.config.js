@@ -17,6 +17,15 @@
  * @constant {string} WOMPI_PRIVATE_KEY - Llave privada de Wompi (solo backend, nunca exponer al cliente).
  * @constant {string} WOMPI_PUBLIC_KEY  - Llave pública de Wompi (usada por el frontend).
  * @constant {string} WOMPI_API_URL     - URL base de la API de Wompi.
+ * Correos y directorio comercial (emprendimientos):
+ * @constant {string} RESEND_API_KEY  - API key de Resend para envío de correos.
+ * @constant {string} RESEND_EMAIL    - Remitente de los correos (dominio verificado en Resend).
+ * @constant {string} ADMIN_EMAIL     - Correo del administrador que recibe la alerta de nuevos emprendimientos.
+ * @constant {string} ADMIN_API_KEY   - (Opcional) Clave que debe enviar el panel admin en el header `x-admin-key`
+ *                                       para aprobar/rechazar emprendimientos. Si no se define, no se exige.
+ * @constant {string} UPLOADS_DIR     - Carpeta donde se guardan logos y fotos (por defecto ./uploads).
+ * @constant {string} PUBLIC_URL      - URL pública del backend para construir los enlaces de las imágenes
+ *                                       (por defecto se usa el host de la petición).
  */
 export const {
   FRONTEND_URL,
@@ -31,6 +40,10 @@ export const {
   DB_NAME,
   RESEND_API_KEY,
   RESEND_EMAIL,
+  ADMIN_EMAIL = 'fundaciontcs@columbus.edu.co',
+  ADMIN_API_KEY,
+  UPLOADS_DIR = 'uploads',
+  PUBLIC_URL,
   WOMPI_PRIVATE_KEY,
   WOMPI_PUBLIC_KEY,
   WOMPI_API_URL = 'https://api.wompi.co/v1',
