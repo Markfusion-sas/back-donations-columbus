@@ -39,3 +39,8 @@ export const EMPRENDIMIENTO_CATEGORIAS = [
 ];
 
 export const EMPRENDIMIENTO_RELACIONES = ['padre', 'egresado', 'estudiante', 'staff'];
+
+export const CERTIFICATE_STATUS = {
+  PENDING: 'pendiente',
+  SENT: 'enviado'
+};

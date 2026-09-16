@@ -1,4 +1,4 @@
-import { donationService } from '#services/index';
+import { donationCertificateService, donationService } from '#services/index';
 
 export const donationControllerFactory = () => {
   
@@ -28,6 +28,34 @@ export const donationControllerFactory = () => {
 
   };
 
-  return { createDonation };
+  /** POST /donation/certificado — solicitud de certificado (multipart/form-data con `documento`) */
+  const requestCertificate = async(req, res, next) => {
+    try {
+      const certificado = await donationCertificateService.createCertificateRequest(req.certificado);
+
+      return res.status(201).json({
+        success: true,
+        data: certificado
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /** PATCH /donation/certificado/:id — asocia la solicitud con la referencia de la donación */
+  const linkCertificate = async(req, res, next) => {
+    try {
+      const certificado = await donationCertificateService.linkToDonation(req.params.id, req.body.reference);
+
+      return res.status(200).json({
+        success: true,
+        data: certificado
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  return { createDonation, requestCertificate, linkCertificate };
 
 };

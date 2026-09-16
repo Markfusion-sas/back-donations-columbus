@@ -6,6 +6,7 @@ import { mapPaymentSource } from '#mappers/paymentSource.mapper';
 import { mapProduct } from '#mappers/product.mapper';
 import { mapWompiTransaction } from '#mappers/wompiTransaction.mapper';
 import { Donation } from '#models/donation.model';
+import { DonationCertificate } from '#models/donationCertificate.model';
 import { Emprendimiento } from '#models/emprendimiento.model';
 import { Order } from '#models/order.model';
 import { OrderDetail } from '#models/orderDetail.model';
@@ -17,7 +18,9 @@ import { Transaction } from '#models/transaction.model';
 import { errorLog, log } from '#utils/logger.util';
 
 import { donationServiceFactory } from './donation.service.js';
+import { donationCertificateServiceFactory } from './donationCertificate.service.js';
 import {
+  sendDonationCertificateAlert,
   sendEmprendimientoApprovedEmail,
   sendEmprendimientoRejectedEmail,
   sendNewEmprendimientoAlert
@@ -73,5 +76,11 @@ export const emprendimientoService = emprendimientoServiceFactory({
   notifyNewEmprendimiento: sendNewEmprendimientoAlert,
   notifyApproved: sendEmprendimientoApprovedEmail,
   notifyRejected: sendEmprendimientoRejectedEmail,
+  errorLog
+});
+
+export const donationCertificateService = donationCertificateServiceFactory({
+  DonationCertificate,
+  notifyAdmin: sendDonationCertificateAlert,
   errorLog
 });

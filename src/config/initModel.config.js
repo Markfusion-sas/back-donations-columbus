@@ -1,6 +1,7 @@
 import sequelize from '#config/database.config';
 import { setupAssociations } from '#models/associations';
 import { Donation } from '#models/donation.model';
+import { DonationCertificate } from '#models/donationCertificate.model';
 import { Emprendimiento } from '#models/emprendimiento.model';
 import { Order } from '#models/order.model';
 import { OrderDetail } from '#models/orderDetail.model';
@@ -27,6 +28,7 @@ export const initDatabase = async() => {
     await PaymentSource.sync({ alter: false });
     await RecurringCharge.sync({ alter: false });
     await Emprendimiento.sync({ alter: false });
+    await DonationCertificate.sync({ alter: false });
 
     const [product] = await Product.findOrCreate({
       where: { title: 'Tabla bingo' },

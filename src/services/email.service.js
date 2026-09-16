@@ -1,3 +1,4 @@
+import { readFile } from 'fs/promises';
 import { Resend } from 'resend';
 
 import { ADMIN_EMAIL, FRONTEND_URL, RESEND_API_KEY, RESEND_EMAIL } from '#config/environment.config';
@@ -216,13 +217,14 @@ const resumenEmprendimiento = (e) => `
   </table>
 `;
 
-const sendEmail = async({ to, subject, html, tag }) => {
+const sendEmail = async({ to, subject, html, tag, attachments }) => {
   try {
     const result = await resend.emails.send({
       from: `Fundación The Columbus School <${RESEND_EMAIL}>`,
       to,
       subject,
-      html
+      html,
+      ...(attachments ? { attachments } : {})
     });
     if (result?.error) {
       errorLog(`Resend rechazó el correo "${tag}" a ${to}:`, JSON.stringify(result.error));
@@ -327,5 +329,61 @@ export const sendEmprendimientoRejectedEmail = async(emprendimiento) => {
     subject: `Sobre tu registro de ${e.nombre_emprendimiento} en el directorio comercial`,
     html: buildEmprendimientoLayout({ title: 'Registro no aprobado', bodyHtml }),
     tag: 'emprendimiento rechazado'
+  });
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  CERTIFICADO DE DONACIÓN
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Alerta al administrador: un donante solicitó certificado de donación.
+ * Adjunta la cédula / RUT que subió.
+ * @param {object} certificado - registro creado (modelo o plain object)
+ * @param {string} [documentoPath] - ruta local del archivo para adjuntarlo
+ */
+export const sendDonationCertificateAlert = async(certificado, documentoPath) => {
+  const c = typeof certificado.get === 'function' ? certificado.get({ plain: true }) : certificado;
+  const monto = c.donation_value ? `$${Number(c.donation_value).toLocaleString('es-CO')} COP` : '';
+
+  const bodyHtml = `
+    <p style="font-size: 16px; color: #333;">Hola,</p>
+    <p style="font-size: 15px; color: #555;">
+      <strong>${escapeHtml(c.name)} ${escapeHtml(c.last_name)}</strong> solicitó un
+      <strong>certificado de donación</strong> desde el formulario de la página. Adjuntamos el documento que subió.
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border: 1px solid #eee; border-radius: 6px;">
+      ${infoRow('Nombre', `${c.name} ${c.last_name}`)}
+      ${infoRow('Documento de identidad', c.identity_document)}
+      ${infoRow('Correo', c.email)}
+      ${infoRow('Teléfono', c.phone)}
+      ${infoRow('Monto de la donación', monto)}
+      ${infoRow('Destino', c.donation_destination)}
+      ${infoRow('Referencia de la donación', c.donation_reference || 'Pendiente (aún no ha pagado)')}
+      ${infoRow('Archivo', c.documento_nombre)}
+    </table>
+    <p style="margin-top: 16px;">
+      <a href="${escapeHtml(c.documento_url)}" style="color: #003087;">Ver / descargar documento</a>
+    </p>
+    <p style="font-size: 14px; color: #777; margin-top: 24px;">
+      Recuerda verificar en el panel administrativo que la donación haya sido aprobada antes de emitir el certificado.
+    </p>
+  `;
+
+  let attachments;
+  if (documentoPath) {
+    try {
+      attachments = [{ filename: c.documento_nombre || 'documento', content: await readFile(documentoPath) }];
+    } catch (error) {
+      errorLog('No se pudo leer el documento para adjuntarlo:', error?.message ?? error);
+    }
+  }
+
+  await sendEmail({
+    to: ADMIN_EMAIL,
+    subject: `Solicitud de certificado de donación: ${c.name} ${c.last_name}`,
+    html: buildEmprendimientoLayout({ title: 'Solicitud de certificado de donación', bodyHtml }),
+    tag: 'certificado de donación',
+    attachments
   });
 };
