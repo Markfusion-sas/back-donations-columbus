@@ -18,6 +18,7 @@ import { PaymentSource } from '#models/paymentSource.model';
 import { Product } from '#models/product.model';
 import { ProductVariant } from '#models/productVariant.model';
 import { RecurringCharge } from '#models/recurringCharge.model';
+import { SiteContent } from '#models/siteContent.model';
 import { Transaction } from '#models/transaction.model';
 import { errorLog, log } from '#utils/logger.util';
 
@@ -34,6 +35,7 @@ import { orderServiceFactory } from './order.service.js';
 import { paymentSourceServiceFactory } from './paymentSource.service.js';
 import { productServiceFactory } from './product.service.js';
 import { productVariantServiceFactory } from './productVariant.service.js';
+import { siteContentServiceFactory } from './siteContent.service.js';
 import { wompiTransactionServiceFactory } from './wompiTransaction.service.js';
 
 export const wompiTransactionService = wompiTransactionServiceFactory({
@@ -102,3 +104,5 @@ export const donationCertificateService = donationCertificateServiceFactory({
   notifyAdmin: sendDonationCertificateAlert,
   errorLog
 });
+
+export const siteContentService = siteContentServiceFactory({ SiteContent });

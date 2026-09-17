@@ -16,7 +16,7 @@ const parseHeader = (values) => values.join(', ');
  * Middleware para configurar encabezados CORS.
  * @param {object} options - Opciones de configuración.
  * @param {boolean} [options.skip=false] - Si es , omite la configuración de CORS.
- * @param {string} [options.origin='*'] - Origen permitido para solicitudes CORS.
+ * @param {string} [options.origin='*'] - Origen u orígenes permitidos (separados por coma) para solicitudes CORS.
  * @param {string[]} [options.methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']] - Métodos HTTP permitidos.
  * @param {string[]} [options.headers=['Content-Type', 'Authorization', 'x-admin-key']] - Encabezados permitidos.
  * Las peticiones preflight (OPTIONS) se responden con 204 sin pasar por las rutas.
@@ -28,7 +28,14 @@ const parseHeader = (values) => values.join(', ');
  */
 export const cors = ({ skip = false, origin = '*', methods = DEFAULT_METHODS, headers = DEFAULT_HEADERS }) => (req, res, next) => {
   if (!skip) {
-    res.header('Access-Control-Allow-Origin', origin);
+    // `origin` admite varios orígenes separados por coma (p. ej. producción + túnel de demo + localhost).
+    // Si el Origin de la petición está en la lista se responde con ese; si no, con el primero.
+    const allowed = String(origin || '*').split(',').map((o) => o.trim()).filter(Boolean);
+    const requestOrigin = req.headers.origin;
+    const resolved = allowed.includes('*') ? '*' : (allowed.includes(requestOrigin) ? requestOrigin : allowed[0]);
+
+    res.header('Access-Control-Allow-Origin', resolved);
+    if (resolved !== '*') res.header('Vary', 'Origin');
     res.header('Access-Control-Allow-Methods', parseHeader(methods.map(value => value.toUpperCase())));
     res.header('Access-Control-Allow-Headers', parseHeader(headers));
 

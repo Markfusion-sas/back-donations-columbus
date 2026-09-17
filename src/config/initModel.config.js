@@ -6,9 +6,10 @@ import { Emprendimiento } from '#models/emprendimiento.model';
 import { Order } from '#models/order.model';
 import { OrderDetail } from '#models/orderDetail.model';
 import { PaymentSource } from '#models/paymentSource.model';
-import { RecurringCharge } from '#models/recurringCharge.model';
 import { Product } from '#models/product.model';
 import { ProductVariant } from '#models/productVariant.model';
+import { RecurringCharge } from '#models/recurringCharge.model';
+import { SiteContent } from '#models/siteContent.model';
 import { Transaction } from '#models/transaction.model';
 import { errorLog, sqlLog } from '#utils/logger.util';
 
@@ -29,6 +30,7 @@ export const initDatabase = async() => {
     await RecurringCharge.sync({ alter: false });
     await Emprendimiento.sync({ alter: false });
     await DonationCertificate.sync({ alter: false });
+    await SiteContent.sync({ alter: false });
 
     const [product] = await Product.findOrCreate({
       where: { title: 'Tabla bingo' },
