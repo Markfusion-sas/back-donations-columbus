@@ -14,7 +14,11 @@ describe('Mapper: mapEmprendimiento', () => {
     assert.deepStrictEqual(result.relacion_tcs, ['padre', 'egresado']);
     assert.deepStrictEqual(result.categorias, ['gastronomia', 'otro']);
     assert.strictEqual(result.categoria_otro, 'Conservas');
-    assert.strictEqual(result.telefono_personal, '573001112233');
+    assert.strictEqual(result.telefono_personal, '573001112233')
+    assert.strictEqual(result.cedula, '1017234567', 'La cédula se normaliza a solo dígitos')
+    assert.strictEqual(result.codigo_familia, 'FAM-123')
+    assert.strictEqual(result.red_social_tipo, 'instagram')
+    assert.deepStrictEqual(result.beneficio_condiciones, ['noAcumulable']);
     assert.strictEqual(result.email, 'hola@salsisa.co');
     assert.strictEqual(result.red_social, 'salsisa');
     assert.strictEqual(result.envios, null, 'Expected empty optional to be null');

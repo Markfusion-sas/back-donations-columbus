@@ -203,6 +203,8 @@ const resumenEmprendimiento = (e) => `
     ${infoRow('Emprendimiento', e.nombre_emprendimiento)}
     ${infoRow('Representante', e.nombre_representante)}
     ${infoRow('Relación con TCS', (e.relacion_tcs ?? []).map((r) => RELACION_LABEL[r] || r).join(', '))}
+    ${infoRow('Cédula', e.cedula)}
+    ${infoRow('Código de familia', e.codigo_familia)}
     ${infoRow('Categorías', categoriasTexto(e))}
     ${infoRow('Correo de la marca', e.email)}
     ${infoRow('Contacto de la marca', e.telefono_marca ? `+${e.telefono_marca}` : '')}
@@ -210,8 +212,12 @@ const resumenEmprendimiento = (e) => `
     ${infoRow('Red social', e.red_social ? `@${e.red_social}` : '')}
     ${infoRow('Web / portafolio', e.web)}
     ${infoRow('Punto físico', e.punto_fisico)}
+    ${infoRow('Horario', e.horario)}
     ${infoRow('Envíos', e.envios)}
     ${infoRow('Beneficio TCS', e.beneficio_tcs ? (e.beneficio_descripcion || 'Sí') : 'No')}
+    ${infoRow('Cómo se hace efectivo', e.beneficio_como)}
+    ${infoRow('Condiciones', (e.beneficio_condiciones ?? []).join(', '))}
+    ${infoRow('Detalle de condiciones', e.beneficio_condiciones_detalle)}
     ${infoRow('Historia', e.historia)}
     ${infoRow('Productos / servicios', e.descripcion)}
   </table>
@@ -252,6 +258,11 @@ export const sendNewEmprendimientoAlert = async(emprendimiento) => {
       <strong>${escapeHtml(e.nombre_emprendimiento)}</strong> en el directorio comercial y está
       <strong>pendiente de aprobación</strong>.
     </p>
+    <div style="background-color: #fff8e1; border-left: 4px solid #f5a623; padding: 12px 16px; margin: 16px 0; font-size: 13px; color: #7a5b00;">
+      <strong>Verificar con la base de datos del colegio.</strong><br />
+      Cédula: ${escapeHtml(e.cedula || 'no registrada')}${e.codigo_familia ? ` · Código de familia: ${escapeHtml(e.codigo_familia)}` : ''}.<br />
+      Si la persona no aparece en la base de datos, confírmalo antes de aprobar o rechazar el registro.
+    </div>
     ${resumenEmprendimiento(e)}
     ${e.logo ? `<p style="margin-top: 16px;"><a href="${escapeHtml(e.logo)}" style="color: #003087;">Ver logo</a></p>` : ''}
     <p style="margin-top: 24px; text-align: center;">

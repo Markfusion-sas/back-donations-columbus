@@ -44,3 +44,14 @@ export const CERTIFICATE_STATUS = {
   PENDING: 'pendiente',
   SENT: 'enviado'
 };
+
+export const EMPRENDIMIENTO_REDES = ['instagram', 'facebook', 'tiktok', 'whatsapp', 'linkedin', 'youtube', 'x'];
+
+export const EMPRENDIMIENTO_CONDICIONES_BENEFICIO = [
+  'montoMinimo',
+  'noAcumulable',
+  'canal',
+  'clientesNuevos',
+  'referencias',
+  'na'
+];

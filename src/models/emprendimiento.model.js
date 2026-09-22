@@ -22,6 +22,21 @@ Emprendimiento.init({
     type: DataTypes.STRING,
     allowNull: false
   },
+  cedula: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  // Solo para papá/mamá y estudiantes; se verifica contra la base del colegio
+  codigo_familia: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  // 'pendiente' hasta que se confirme con la base de datos del colegio
+  verificacion_comunidad: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'pendiente'
+  },
   telefono_personal: {
     type: DataTypes.STRING,
     allowNull: false
@@ -65,11 +80,20 @@ Emprendimiento.init({
     type: DataTypes.STRING,
     allowNull: false
   },
+  red_social_tipo: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'instagram'
+  },
   web: {
     type: DataTypes.STRING,
     allowNull: false
   },
   punto_fisico: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  horario: {
     type: DataTypes.STRING,
     allowNull: true
   },
@@ -94,7 +118,20 @@ Emprendimiento.init({
     defaultValue: false
   },
   beneficio_descripcion: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  beneficio_como: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  beneficio_condiciones: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: false,
+    defaultValue: []
+  },
+  beneficio_condiciones_detalle: {
+    type: DataTypes.TEXT,
     allowNull: true
   },
   // Moderación
