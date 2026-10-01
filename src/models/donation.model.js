@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 
 import sequelize from '#config/database.config';
+import { tableRef } from '#models/types.util';
 
 export class Donation extends Model {}
 
@@ -51,7 +52,7 @@ Donation.init({
     type: DataTypes.UUID,
     allowNull: true,
     references: {
-      model: 'transacciones',
+      model: tableRef('transacciones'),
       key: 'id'
     }
   }

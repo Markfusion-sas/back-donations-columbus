@@ -2,6 +2,7 @@ import { DataTypes, Model } from 'sequelize';
 
 import { EMPRENDIMIENTO_STATUS } from '#config/constants.config';
 import sequelize from '#config/database.config';
+import { stringList } from '#models/types.util';
 
 export class Emprendimiento extends Model {}
 
@@ -51,11 +52,7 @@ Emprendimiento.init({
     type: DataTypes.STRING,
     allowNull: false
   },
-  relacion_tcs: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    allowNull: false,
-    defaultValue: []
-  },
+  relacion_tcs: stringList('relacion_tcs'),
   // Emprendimiento
   nombre_emprendimiento: {
     type: DataTypes.STRING,
@@ -69,11 +66,7 @@ Emprendimiento.init({
     type: DataTypes.STRING,
     allowNull: false
   },
-  categorias: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    allowNull: false,
-    defaultValue: []
-  },
+  categorias: stringList('categorias'),
   categoria_otro: {
     type: DataTypes.STRING,
     allowNull: true
@@ -116,11 +109,7 @@ Emprendimiento.init({
     type: DataTypes.STRING,
     allowNull: false
   },
-  fotos: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    allowNull: false,
-    defaultValue: []
-  },
+  fotos: stringList('fotos'),
   // Beneficio para la comunidad TCS
   beneficio_tcs: {
     type: DataTypes.BOOLEAN,
@@ -135,11 +124,7 @@ Emprendimiento.init({
     type: DataTypes.TEXT,
     allowNull: true
   },
-  beneficio_condiciones: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    allowNull: false,
-    defaultValue: []
-  },
+  beneficio_condiciones: stringList('beneficio_condiciones'),
   beneficio_condiciones_detalle: {
     type: DataTypes.TEXT,
     allowNull: true

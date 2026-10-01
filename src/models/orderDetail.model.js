@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 
 import sequelize from '#config/database.config';
+import { tableRef } from '#models/types.util';
 
 export class OrderDetail extends Model {}
 
@@ -14,7 +15,7 @@ OrderDetail.init({
     type: DataTypes.UUID,
     allowNull: false,
     references: {
-      model: 'ordenes',
+      model: tableRef('ordenes'),
       key: 'id'
     }
   },
@@ -22,7 +23,7 @@ OrderDetail.init({
     type: DataTypes.UUID,
     allowNull: false,
     references: {
-      model: 'variantes',
+      model: tableRef('variantes'),
       key: 'id'
     }
   },

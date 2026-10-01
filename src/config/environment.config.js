@@ -8,6 +8,8 @@
  * @constant {string} SECRET_EVENT      - Token compartido para validar eventos de Wompi.
  * @constant {string} INTEGRITY_SECRET  - Llave secreta usada para validar la integridad de los pagos.
  * Base de datos:
+ * @constant {string} DB_DIALECT  - 'mssql' (SQL Server del colegio, producción) o 'postgres' (por defecto, desarrollo).
+ * @constant {string} DB_SCHEMA   - (Opcional) Esquema donde viven las tablas (producción: fundacion).
  * @constant {string} DB_HOST     - Host de la base de datos PostgreSQL.
  * @constant {number} DB_PORT     - Puerto en el que corre la base de datos.
  * @constant {string} DB_USER     - Usuario para la conexión a PostgreSQL.
@@ -50,6 +52,8 @@ export const {
   DB_USER,
   DB_PASSWORD,
   DB_NAME,
+  DB_DIALECT = 'postgres',
+  DB_SCHEMA,
   RESEND_API_KEY,
   RESEND_EMAIL,
   ADMIN_EMAIL = 'fundaciontcs@columbus.edu.co',

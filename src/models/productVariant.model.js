@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 
 import sequelize from '#config/database.config';
+import { tableRef } from '#models/types.util';
 
 export class ProductVariant extends Model {}
 
@@ -14,7 +15,7 @@ ProductVariant.init({
     type: DataTypes.UUID,
     allowNull: false,
     references: {
-      model: 'productos',
+      model: tableRef('productos'),
       key: 'id'
     }
   },

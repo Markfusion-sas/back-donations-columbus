@@ -1,4 +1,5 @@
-import sequelize from '#config/database.config';
+import sequelize, { isMssql } from '#config/database.config';
+import { DB_SCHEMA } from '#config/environment.config';
 import { setupAssociations } from '#models/associations';
 import { Donation } from '#models/donation.model';
 import { DonationCertificate } from '#models/donationCertificate.model';
@@ -17,6 +18,14 @@ export const initDatabase = async() => {
   try {
     await sequelize.authenticate();
     sqlLog('Conexión establecida con la base de datos');
+
+    // SQL Server: las tablas del sitio viven en su propio esquema (idempotente)
+    if (isMssql && DB_SCHEMA) {
+      if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(DB_SCHEMA)) throw new Error(`DB_SCHEMA no válido: ${DB_SCHEMA}`);
+      await sequelize.query(
+        `IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'${DB_SCHEMA}') EXEC('CREATE SCHEMA [${DB_SCHEMA}]')`
+      );
+    }
 
     setupAssociations();
 
@@ -62,7 +71,7 @@ export const initDatabase = async() => {
       }
     });
   } catch (error) {
-    errorLog('Error al iniciar conexión:', error.message);
+    errorLog('Error al iniciar conexión:', error.message, error.original?.message ?? '', error.sql ?? '');
     process.exit(1);
   }
 };
