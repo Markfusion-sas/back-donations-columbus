@@ -64,6 +64,17 @@ describe('Mapper: mapEmprendimientoResponse', () => {
     assert.strictEqual(result.createdAt, emprendimientoDbMock.createdAt);
   });
 
+  it('should include the donation summary only when fuentePago was loaded', () => {
+    assert.strictEqual('donacion' in mapEmprendimientoResponse(emprendimientoDbMock), false);
+
+    const result = mapEmprendimientoResponse({
+      ...emprendimientoDbMock,
+      fuentePago: { donation_value: 10000, billing_frequency: 'monthly', type: 'NEQUI', status: 'available', name: 'Isabel', last_name: 'Páez' }
+    });
+    assert.strictEqual(result.donacion.valor, 10000);
+    assert.strictEqual(result.donacion.donante, 'Isabel Páez');
+  });
+
   it('should unwrap a Sequelize instance via get({ plain: true })', () => {
     const instance = { get: () => ({ ...emprendimientoDbMock, beneficio_tcs: false }) };
     const result = mapEmprendimientoResponse(instance);
@@ -88,6 +99,17 @@ describe('Schema: emprendimientoSchema', () => {
   it('should require beneficio_descripcion when beneficio_tcs is true', () => {
     const { error } = emprendimientoSchema.validate({ ...valid, beneficio_descripcion: '' });
     assert.match(error.message, /beneficio/);
+  });
+
+  it('should not require the recurring donation anymore', () => {
+    const { error } = emprendimientoSchema.validate({ ...valid, fuente_pago_id: undefined });
+    assert.strictEqual(error, undefined, error?.message);
+  });
+
+  it('should require the grade (grado) for students', () => {
+    const estudiante = { ...valid, relacion_tcs: ['estudiante'] };
+    assert.match(emprendimientoSchema.validate(estudiante).error.message, /grado/);
+    assert.strictEqual(emprendimientoSchema.validate({ ...estudiante, grado: '8°' }).error, undefined);
   });
 
   it('should reject an invalid category and a missing logo', () => {

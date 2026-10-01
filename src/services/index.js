@@ -2,6 +2,7 @@ import { unlink } from 'fs/promises';
 import { join } from 'path';
 
 import { UPLOADS_DIR } from '#config/environment.config';
+import { isMssqlConfigured, runMssqlQuery } from '#config/mssql.config';
 import { mapDonation } from '#mappers/donation.mapper';
 import { mapEmprendimientoResponse } from '#mappers/emprendimiento.mapper';
 import { mapOrder } from '#mappers/order.mapper';
@@ -22,6 +23,7 @@ import { SiteContent } from '#models/siteContent.model';
 import { Transaction } from '#models/transaction.model';
 import { errorLog, log } from '#utils/logger.util';
 
+import { comunidadServiceFactory } from './comunidad.service.js';
 import { donationServiceFactory } from './donation.service.js';
 import { donationCertificateServiceFactory } from './donationCertificate.service.js';
 import {
@@ -89,9 +91,17 @@ const removeUploadedFiles = async(urls = []) => {
   }));
 };
 
+export const comunidadService = comunidadServiceFactory({
+  runQuery: runMssqlQuery,
+  isConfigured: isMssqlConfigured,
+  errorLog
+});
+
 export const emprendimientoService = emprendimientoServiceFactory({
   Emprendimiento,
   mapEmprendimientoResponse,
+  PaymentSource,
+  verificarComunidad: comunidadService.verificarRegistro,
   removeFiles: removeUploadedFiles,
   notifyNewEmprendimiento: sendNewEmprendimientoAlert,
   notifyApproved: sendEmprendimientoApprovedEmail,

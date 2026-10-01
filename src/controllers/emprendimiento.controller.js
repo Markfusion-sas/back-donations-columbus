@@ -1,4 +1,5 @@
 import { EMPRENDIMIENTO_STATUS } from '#config/constants.config';
+import { isAdminRequest } from '#middlewares/requireAdminKey.middleware';
 import { emprendimientoService } from '#services/index';
 
 export const emprendimientoControllerFactory = () => {
@@ -31,7 +32,7 @@ export const emprendimientoControllerFactory = () => {
         throw error;
       }
 
-      const emprendimientos = await emprendimientoService.getEmprendimientos({ estado });
+      const emprendimientos = await emprendimientoService.getEmprendimientos({ estado, conDonacion: isAdminRequest(req) });
 
       return res.status(200).json({
         success: true,
@@ -45,7 +46,7 @@ export const emprendimientoControllerFactory = () => {
   /** GET /emprendimientos/:id */
   const getEmprendimientoById = async(req, res, next) => {
     try {
-      const emprendimiento = await emprendimientoService.getEmprendimientoById(req.params.id);
+      const emprendimiento = await emprendimientoService.getEmprendimientoById(req.params.id, { conDonacion: isAdminRequest(req) });
 
       return res.status(200).json({
         success: true,

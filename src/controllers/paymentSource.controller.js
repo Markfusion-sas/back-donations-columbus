@@ -39,6 +39,7 @@ export const paymentSourceControllerFactory = () => {
       return res.status(200).json({
         success: true,
         data: {
+          id: paymentSource.id,
           wompi_source_id: paymentSource.wompi_source_id,
           type: paymentSource.type,
           phone_number: paymentSource.phone_number,
@@ -157,6 +158,7 @@ export const paymentSourceControllerFactory = () => {
       return res.status(200).json({
         success: true,
         data: {
+          id: paymentSource.id,
           wompi_source_id: paymentSource.wompi_source_id,
           type: paymentSource.type,
           brand: paymentSource.brand,

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import comunidadRouter from '#routers/comunidad.router';
 import donationRouter from '#routers/donation.router';
 import emprendimientoRouter from '#routers/emprendimiento.router';
 import orderRouter from '#routers/order.router';
@@ -17,5 +18,6 @@ router.use('/orders', orderRouter);
 router.use('/payment-sources', paymentSourceRouter);
 router.use('/emprendimientos', emprendimientoRouter);
 router.use('/contenido', siteContentRouter);
+router.use('/comunidad', comunidadRouter);
 
 export default router;

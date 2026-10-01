@@ -34,12 +34,16 @@ export const emprendimientoSchema = Joi.object({
     'string.empty': 'La cédula es obligatoria',
     'any.required': 'La cédula es obligatoria'
   }),
-  // Obligatorio para papá/mamá y estudiantes (se verifica con el colegio)
-  codigo_familia: Joi.string().max(30).allow(null, '').when('relacion_tcs', {
-    is: Joi.array().has(Joi.string().valid('padre', 'estudiante')),
+  // Papá/mamá y estudiantes: si la cédula está en la base del colegio el código
+  // se toma de allí (no se muestra en pantalla, 2026-10-01); si no, lo escribe la
+  // persona. La obligatoriedad se revisa en el servicio, después de consultar la base.
+  codigo_familia: Joi.string().max(30).allow(null, ''),
+  // Estudiantes: grado que cursan (revisión 30/09/2026)
+  grado: Joi.string().max(30).allow(null, '').when('relacion_tcs', {
+    is: Joi.array().has('estudiante'),
     then: Joi.string().max(30).invalid(null, '').required().messages({
-      'any.invalid': 'El código de familia es obligatorio',
-      'any.required': 'El código de familia es obligatorio'
+      'any.invalid': 'El grado es obligatorio para estudiantes',
+      'any.required': 'El grado es obligatorio para estudiantes'
     })
   }),
   telefono_personal: phone,
@@ -106,7 +110,10 @@ export const emprendimientoSchema = Joi.object({
       'any.required': 'Selecciona al menos una condición de la oferta'
     })
   }),
-  beneficio_condiciones_detalle: Joi.string().max(300).allow(null, '')
+  beneficio_condiciones_detalle: Joi.string().max(300).allow(null, ''),
+  // La donación recurrente se quitó del registro (revisión 30/09/2026); se
+  // conserva opcional para los registros que ya la tienen
+  fuente_pago_id: Joi.string().guid().allow(null, '')
 });
 
 export const rechazoSchema = Joi.object({
@@ -118,5 +125,5 @@ export const rechazoSchema = Joi.object({
  * autorización de datos no se vuelve a pedir.
  */
 export const emprendimientoUpdateSchema = emprendimientoSchema
-  .fork(['logo'], (field) => field.optional())
+  .fork(['logo', 'fuente_pago_id', 'grado'], (field) => field.optional())
   .fork(['acepta_datos'], () => Joi.any().optional());

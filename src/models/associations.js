@@ -1,4 +1,5 @@
 import { Donation } from './donation.model.js';
+import { Emprendimiento } from './emprendimiento.model.js';
 import { Order } from './order.model.js';
 import { OrderDetail } from './orderDetail.model.js';
 import { PaymentSource } from './paymentSource.model.js';
@@ -84,6 +85,13 @@ export const setupAssociations = () => {
   RecurringCharge.belongsTo(Transaction, {
     foreignKey: 'transaction_id',
     as: 'transaction'
+  });
+
+  // Emprendimiento → PaymentSource (donación recurrente del registro)
+  Emprendimiento.belongsTo(PaymentSource, {
+    foreignKey: 'fuente_pago_id',
+    as: 'fuentePago',
+    constraints: false
   });
 
 };

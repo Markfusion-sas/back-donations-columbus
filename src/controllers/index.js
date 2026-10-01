@@ -1,3 +1,4 @@
+import { comunidadControllerFactory } from '#controllers/comunidad.controller';
 import { donationControllerFactory } from '#controllers/donation.controller';
 import { emprendimientoControllerFactory } from '#controllers/emprendimiento.controller';
 import { orderControllerFactory } from '#controllers/order.controller';
@@ -29,3 +30,4 @@ export const orderController = orderControllerFactory();
 export const paymentSourceController = paymentSourceControllerFactory();
 export const emprendimientoController = emprendimientoControllerFactory();
 export const siteContentController = siteContentControllerFactory();
+export const comunidadController = comunidadControllerFactory();

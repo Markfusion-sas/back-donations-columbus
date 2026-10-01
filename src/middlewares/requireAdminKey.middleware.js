@@ -1,6 +1,12 @@
 import { ADMIN_API_KEY } from '#config/environment.config';
 
 /**
+ * Indica si la petición viene del panel admin (misma regla que requireAdminKey),
+ * para rutas públicas que muestran información extra al administrador.
+ */
+export const isAdminRequest = (req) => !ADMIN_API_KEY || req.headers['x-admin-key'] === ADMIN_API_KEY;
+
+/**
  * Protege las rutas del panel administrativo.
  * Si `ADMIN_API_KEY` está definida, exige el header `x-admin-key` con ese valor.
  * Si no está definida, deja pasar (mismo comportamiento del resto del panel).

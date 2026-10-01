@@ -55,6 +55,8 @@ web_modules/
 
 # Database config (opcional si vas a guardar dumps o exportar cosas)
 *.sql
+# Las migraciones sí se versionan
+!migrations/*.sql
 *.sqlite
 *.dump
 

@@ -26,6 +26,18 @@
  * @constant {string} UPLOADS_DIR     - Carpeta donde se guardan logos y fotos (por defecto ./uploads).
  * @constant {string} PUBLIC_URL      - URL pública del backend para construir los enlaces de las imágenes
  *                                       (por defecto se usa el host de la petición).
+ * Correo saliente por SMTP (tiene prioridad sobre Resend si MAIL_HOST está definido):
+ * @constant {string} MAIL_HOST     - Servidor SMTP (Google Workspace: smtp.gmail.com).
+ * @constant {number} MAIL_PORT     - Puerto (587 STARTTLS por defecto; 465 SSL).
+ * @constant {string} MAIL_USER     - Cuenta que envía (fundaciontcs@columbus.edu.co).
+ * @constant {string} MAIL_PASSWORD - Contraseña de aplicación de esa cuenta.
+ * @constant {string} MAIL_FROM     - (Opcional) Dirección del remitente; por defecto MAIL_USER.
+ * Base de datos del colegio (SQL Server, misma que usa TCS Run) para validar la comunidad:
+ * @constant {string} MSSQL_HOST     - Servidor SQL Server. Si no se define, la validación queda desactivada.
+ * @constant {number} MSSQL_PORT     - Puerto (por defecto 1433).
+ * @constant {string} MSSQL_USER     - Usuario de SQL Server.
+ * @constant {string} MSSQL_PASSWORD - Contraseña de SQL Server.
+ * @constant {string} MSSQL_DB       - Base con las tablas students y family_info.
  */
 export const {
   FRONTEND_URL,
@@ -49,5 +61,15 @@ export const {
   WOMPI_API_URL = 'https://api.wompi.co/v1',
   REDIS_HOST = 'localhost',
   REDIS_PORT = 6379,
-  REDIS_URL
+  REDIS_URL,
+  MSSQL_HOST,
+  MSSQL_PORT = 1433,
+  MSSQL_USER,
+  MSSQL_PASSWORD,
+  MSSQL_DB,
+  MAIL_HOST,
+  MAIL_PORT = 587,
+  MAIL_USER,
+  MAIL_PASSWORD,
+  MAIL_FROM
 } = process.env;

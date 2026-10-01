@@ -31,11 +31,21 @@ Emprendimiento.init({
     type: DataTypes.STRING,
     allowNull: true
   },
-  // 'pendiente' hasta que se confirme con la base de datos del colegio
+  // verificado | revisar | no_encontrado | pendiente (ver comunidad.service)
   verificacion_comunidad: {
     type: DataTypes.STRING,
     allowNull: false,
     defaultValue: 'pendiente'
+  },
+  // Motivo de la revisión manual (cédula no encontrada, relación distinta, egresado)
+  verificacion_detalle: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  // Solo para estudiantes
+  grado: {
+    type: DataTypes.STRING,
+    allowNull: true
   },
   telefono_personal: {
     type: DataTypes.STRING,
@@ -132,6 +142,11 @@ Emprendimiento.init({
   },
   beneficio_condiciones_detalle: {
     type: DataTypes.TEXT,
+    allowNull: true
+  },
+  // Donación recurrente obligatoria al registrarse (fuentes_pago.id)
+  fuente_pago_id: {
+    type: DataTypes.UUID,
     allowNull: true
   },
   // Moderación

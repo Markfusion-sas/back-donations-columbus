@@ -28,6 +28,7 @@ export const mapEmprendimiento = (data = {}, { logo, fotos = [] } = {}) => {
     nombre_representante: clean(data.nombre_representante),
     cedula: String(data.cedula ?? '').replace(/\D/g, '') || null,
     codigo_familia: clean(data.codigo_familia) || null,
+    grado: clean(data.grado) || null,
     telefono_personal: String(data.telefono_personal ?? '').replace(/\D/g, ''),
     relacion_tcs: toArray(data.relacion_tcs ?? data['relacion_tcs[]']),
     nombre_emprendimiento: clean(data.nombre_emprendimiento),
@@ -49,7 +50,26 @@ export const mapEmprendimiento = (data = {}, { logo, fotos = [] } = {}) => {
     beneficio_descripcion: beneficio ? clean(data.beneficio_descripcion) || null : null,
     beneficio_como: beneficio ? clean(data.beneficio_como) || null : null,
     beneficio_condiciones: beneficio ? toArray(data.beneficio_condiciones ?? data['beneficio_condiciones[]']) : [],
-    beneficio_condiciones_detalle: beneficio ? clean(data.beneficio_condiciones_detalle) || null : null
+    beneficio_condiciones_detalle: beneficio ? clean(data.beneficio_condiciones_detalle) || null : null,
+    fuente_pago_id: clean(data.fuente_pago_id) || undefined
+  };
+};
+
+/**
+ * Resumen de la donación recurrente asociada (solo para el panel admin).
+ * @param {object|null|undefined} fuentePago - PaymentSource (plain)
+ */
+const mapDonacion = (fuentePago) => {
+  if (!fuentePago) return null;
+  return {
+    valor: fuentePago.donation_value,
+    frecuencia: fuentePago.billing_frequency,
+    tipo: fuentePago.type,
+    estado: fuentePago.status,
+    proximo_cobro: fuentePago.next_billing_date,
+    donante: [fuentePago.name, fuentePago.last_name].filter(Boolean).join(' '),
+    donante_email: fuentePago.customer_email,
+    donante_documento: fuentePago.identity_document
   };
 };
 
@@ -67,6 +87,8 @@ export const mapEmprendimientoResponse = (emprendimiento) => {
     cedula: e.cedula,
     codigo_familia: e.codigo_familia,
     verificacion_comunidad: e.verificacion_comunidad,
+    verificacion_detalle: e.verificacion_detalle ?? null,
+    grado: e.grado ?? null,
     telefono_personal: e.telefono_personal,
     relacion_tcs: e.relacion_tcs ?? [],
     telefono_marca: e.telefono_marca,
@@ -91,6 +113,8 @@ export const mapEmprendimientoResponse = (emprendimiento) => {
     estado: e.estado,
     motivo_rechazo: e.motivo_rechazo,
     revisado_en: e.revisado_en,
+    fuente_pago_id: e.fuente_pago_id ?? null,
+    ...(e.fuentePago !== undefined ? { donacion: mapDonacion(e.fuentePago) } : {}),
     createdAt: e.createdAt ?? e.created_at,
     updatedAt: e.updatedAt ?? e.updated_at
   };

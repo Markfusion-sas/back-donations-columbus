@@ -22,7 +22,8 @@ export const emprendimientoBodyMock = {
   beneficio_descripcion: '10% de descuento',
   beneficio_como: 'Presenta el carné del colegio',
   'beneficio_condiciones[]': ['noAcumulable'],
-  beneficio_condiciones_detalle: ''
+  beneficio_condiciones_detalle: '',
+  fuente_pago_id: '7c1d2e3f-2222-4b3b-8d4e-000000000002'
 };
 
 export const emprendimientoDbMock = {
@@ -54,6 +55,7 @@ export const emprendimientoDbMock = {
   beneficio_como: 'Presenta el carné del colegio',
   beneficio_condiciones: ['noAcumulable'],
   beneficio_condiciones_detalle: null,
+  fuente_pago_id: '7c1d2e3f-2222-4b3b-8d4e-000000000002',
   estado: 'pendiente',
   motivo_rechazo: null,
   revisado_en: null,

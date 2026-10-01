@@ -1,5 +1,11 @@
 import { EMPRENDIMIENTO_STATUS } from '#config/constants.config';
 
+const httpError = (message, statusCode) => {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+};
+
 const notFound = () => {
   const error = new Error('Emprendimiento no encontrado');
   error.statusCode = 404;
@@ -12,7 +18,9 @@ const notFound = () => {
  * @param {object} deps
  * @param {import('sequelize').ModelStatic} deps.Emprendimiento
  * @param {Function} deps.mapEmprendimientoResponse
- * @param {Function} [deps.notifyNewEmprendimiento]  - (emprendimiento) => Promise. Alerta al admin.
+ * @param {import('sequelize').ModelStatic} [deps.PaymentSource] - Para validar la donación recurrente del registro
+ * @param {Function} [deps.verificarComunidad] - (data) => Promise<{verificacion_comunidad, codigo_familia?}>. Base del colegio.
+ * @param {Function} [deps.notifyNewEmprendimiento]  - (emprendimiento, fuentePago) => Promise. Alerta al admin.
  * @param {Function} [deps.notifyApproved]           - (emprendimiento) => Promise. Correo al representante.
  * @param {Function} [deps.notifyRejected]           - (emprendimiento) => Promise. Correo al representante.
  * @param {Function} [deps.errorLog]
@@ -20,6 +28,8 @@ const notFound = () => {
 export const emprendimientoServiceFactory = ({
   Emprendimiento,
   mapEmprendimientoResponse,
+  PaymentSource,
+  verificarComunidad = async() => ({}),
   notifyNewEmprendimiento = async() => {},
   notifyApproved = async() => {},
   notifyRejected = async() => {},
@@ -28,39 +38,74 @@ export const emprendimientoServiceFactory = ({
 }) => {
 
   // Las notificaciones nunca deben tumbar la operación principal
-  const safeNotify = async(fn, emprendimiento) => {
+  const safeNotify = async(fn, ...args) => {
     try {
-      await fn(emprendimiento);
+      await fn(...args);
     } catch (error) {
       errorLog('Error al enviar notificación de emprendimiento:', error?.message ?? error);
     }
   };
 
+  // La donación recurrente ya no es obligatoria (revisión 30/09/2026); si viene,
+  // la fuente de pago debe existir y no estar usada por otro registro
+  const findFuentePago = async(fuentePagoId) => {
+    if (!PaymentSource || !fuentePagoId) return null;
+
+    const fuentePago = await PaymentSource.findByPk(fuentePagoId);
+    if (!fuentePago) throw httpError('La donación recurrente no existe. Vuelve a registrarla.', 400);
+
+    const enUso = await Emprendimiento.count({ where: { fuente_pago_id: fuentePagoId } });
+    if (enUso > 0) throw httpError('Esta donación recurrente ya está asociada a otro emprendimiento.', 409);
+
+    return fuentePago;
+  };
+
   const createEmprendimiento = async(data) => {
+    // Se verifica contra la base del colegio sin bloquear: lo que no coincida
+    // queda marcado para que el administrador lo revise
+    const verificacion = await verificarComunidad(data);
+
+    // Papá/mamá y estudiantes necesitan código de familia: de la base del colegio
+    // o, si no aparece allí, el que escribió la persona
+    const codigoFamilia = verificacion.codigo_familia || data.codigo_familia;
+    if (!codigoFamilia && (data.relacion_tcs ?? []).some((r) => ['padre', 'estudiante'].includes(r))) {
+      throw httpError('El código de familia es obligatorio', 400);
+    }
+
+    const fuentePago = await findFuentePago(data.fuente_pago_id);
+
     const emprendimiento = await Emprendimiento.create({
       ...data,
+      ...verificacion,
       estado: EMPRENDIMIENTO_STATUS.PENDING
     });
 
-    await safeNotify(notifyNewEmprendimiento, emprendimiento);
+    // Al representante solo se le escribe cuando se aprueba (revisión 30/09/2026)
+    await safeNotify(notifyNewEmprendimiento, emprendimiento, fuentePago);
 
     return mapEmprendimientoResponse(emprendimiento);
   };
 
-  const getEmprendimientos = async({ estado } = {}) => {
+  // Solo el panel admin ve la donación asociada
+  const includeDonacion = (conDonacion) => (conDonacion && PaymentSource
+    ? { include: [{ model: PaymentSource, as: 'fuentePago' }] }
+    : {});
+
+  const getEmprendimientos = async({ estado, conDonacion = false } = {}) => {
     const where = {};
     if (estado) where.estado = estado;
 
     const list = await Emprendimiento.findAll({
       where,
-      order: [['created_at', 'DESC']]
+      order: [['created_at', 'DESC']],
+      ...includeDonacion(conDonacion)
     });
 
     return list.map(mapEmprendimientoResponse);
   };
 
-  const getEmprendimientoById = async(id) => {
-    const emprendimiento = await Emprendimiento.findByPk(id);
+  const getEmprendimientoById = async(id, { conDonacion = false } = {}) => {
+    const emprendimiento = await Emprendimiento.findByPk(id, includeDonacion(conDonacion));
     if (!emprendimiento) throw notFound();
     return mapEmprendimientoResponse(emprendimiento);
   };
@@ -105,7 +150,8 @@ export const emprendimientoServiceFactory = ({
     const emprendimiento = await Emprendimiento.findByPk(id);
     if (!emprendimiento) throw notFound();
 
-    const { acepta_datos: _acepta, logo: nuevoLogo, fotos: nuevasFotos = [], ...campos } = data; // eslint-disable-line no-unused-vars
+    // La donación del registro no se cambia desde la edición
+    const { acepta_datos: _acepta, fuente_pago_id: _fuente, verificacion_comunidad: _v, verificacion_detalle: _vd, logo: nuevoLogo, fotos: nuevasFotos = [], ...campos } = data; // eslint-disable-line no-unused-vars
 
     const fotosPrevias = emprendimiento.fotos ?? [];
     const fotosConservadas = fotosPrevias.filter((url) => fotosExistentes.includes(url));

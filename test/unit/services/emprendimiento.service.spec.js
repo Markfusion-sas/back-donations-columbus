@@ -106,4 +106,93 @@ describe('Service: emprendimientoService', () => {
     assert.strictEqual(result.estado, EMPRENDIMIENTO_STATUS.APPROVED);
     assert.strictEqual(errors.length, 1, 'Expected the notification error to be logged');
   });
+
+  describe('donación recurrente (opcional)', () => {
+    const FUENTE_ID = emprendimientoDbMock.fuente_pago_id;
+    let usados;
+
+    beforeEach(() => {
+      usados = 0;
+      fakeModel.count = async({ where }) => (where.fuente_pago_id === FUENTE_ID ? usados : 0);
+      service = emprendimientoServiceFactory({
+        Emprendimiento: fakeModel,
+        mapEmprendimientoResponse,
+        PaymentSource: { findByPk: async(id) => (id === FUENTE_ID ? { id, donation_value: 5000 } : null) },
+        notifyNewEmprendimiento: async(e, fuente) => notifications.push(['nuevo', fuente?.donation_value])
+      });
+    });
+
+    it('should create and alert only the admin (the representative is emailed on approval)', async() => {
+      const result = await service.createEmprendimiento({ ...emprendimientoDbMock });
+
+      assert.strictEqual(result.fuente_pago_id, FUENTE_ID);
+      assert.deepStrictEqual(notifications, [['nuevo', 5000]]);
+    });
+
+    it('should register without a recurring donation', async() => {
+      const result = await service.createEmprendimiento({ ...emprendimientoDbMock, fuente_pago_id: undefined });
+
+      assert.strictEqual(result.estado, EMPRENDIMIENTO_STATUS.PENDING);
+      assert.deepStrictEqual(notifications, [['nuevo', undefined]]);
+    });
+
+    it('should reject an unknown payment source with 400', async() => {
+      await assert.rejects(
+        () => service.createEmprendimiento({ ...emprendimientoDbMock, fuente_pago_id: '00000000-0000-4000-8000-000000000000' }),
+        (error) => error.statusCode === 400
+      );
+    });
+
+    it('should reject a payment source already used by another record with 409', async() => {
+      usados = 1;
+      await assert.rejects(
+        () => service.createEmprendimiento({ ...emprendimientoDbMock }),
+        (error) => error.statusCode === 409
+      );
+    });
+
+    it('should save the school verification without blocking the registration', async() => {
+      service = emprendimientoServiceFactory({
+        Emprendimiento: fakeModel,
+        mapEmprendimientoResponse,
+        PaymentSource: { findByPk: async(id) => ({ id }) },
+        verificarComunidad: async({ cedula }) => (cedula === '1'
+          ? { verificacion_comunidad: 'no_encontrado', verificacion_detalle: 'No aparece' }
+          : { verificacion_comunidad: 'verificado', verificacion_detalle: null, codigo_familia: '4521' })
+      });
+
+      const result = await service.createEmprendimiento({ ...emprendimientoDbMock });
+      assert.strictEqual(result.verificacion_comunidad, 'verificado');
+      assert.strictEqual(result.codigo_familia, '4521');
+
+      // Si no aparece en la base se registra igual, marcado para revisión
+      const noEncontrado = await service.createEmprendimiento({ ...emprendimientoDbMock, cedula: '1' });
+      assert.strictEqual(noEncontrado.verificacion_comunidad, 'no_encontrado');
+      assert.strictEqual(noEncontrado.verificacion_detalle, 'No aparece');
+    });
+
+    it('should require a family code for parents not found in the school database', async() => {
+      service = emprendimientoServiceFactory({
+        Emprendimiento: fakeModel,
+        mapEmprendimientoResponse,
+        verificarComunidad: async() => ({ verificacion_comunidad: 'no_encontrado', verificacion_detalle: 'No aparece' })
+      });
+
+      await assert.rejects(
+        () => service.createEmprendimiento({ ...emprendimientoDbMock, codigo_familia: null }),
+        (error) => error.statusCode === 400 && /código de familia/.test(error.message)
+      );
+      const ok = await service.createEmprendimiento({ ...emprendimientoDbMock, codigo_familia: 'FAM-9' });
+      assert.strictEqual(ok.codigo_familia, 'FAM-9');
+    });
+
+    it('should not change the payment source when editing', async() => {
+      const result = await service.updateEmprendimiento(emprendimientoDbMock.id, {
+        ...emprendimientoDbMock,
+        fuente_pago_id: '00000000-0000-4000-8000-000000000000'
+      }, []);
+
+      assert.strictEqual(result.fuente_pago_id, FUENTE_ID);
+    });
+  });
 });

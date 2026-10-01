@@ -1,10 +1,12 @@
 import { readFile } from 'fs/promises';
-import { Resend } from 'resend';
 
-import { ADMIN_EMAIL, FRONTEND_URL, RESEND_API_KEY, RESEND_EMAIL } from '#config/environment.config';
+import { ADMIN_EMAIL, FRONTEND_URL } from '#config/environment.config';
 import { errorLog, log } from '#utils/logger.util';
+import { deliverMail } from '#utils/mailer.util';
 
-const resend = new Resend(RESEND_API_KEY);
+// FRONTEND_URL puede traer varios orígenes separados por coma (CORS); los
+// enlaces de los correos usan el primero
+const SITE_URL = String(FRONTEND_URL ?? '').split(',')[0].trim().replace(/\/$/, '');
 
 const buildOrderConfirmationHtml = ({ order, details }) => {
   const itemsRows = details.map(detail => `
@@ -97,18 +99,16 @@ const buildOrderConfirmationHtml = ({ order, details }) => {
 
 export const sendOrderConfirmationEmail = async({ order, details }) => {
   try {
-    const result = await resend.emails.send({
-      from: `Bingo <${RESEND_EMAIL}>`,
+    const result = await deliverMail({
+      fromName: 'Bingo',
       to: order.email,
       subject: `¡Compra confirmada! Orden ${order.reference}`,
       html: buildOrderConfirmationHtml({ order, details })
     });
 
-    log(`Correo de confirmación enviado a ${order.email} para la orden ${order.reference}`);
-    log('Resend response:', JSON.stringify(result));
+    log(`Correo de confirmación enviado a ${order.email} para la orden ${order.reference}`, result.id);
   } catch (error) {
     errorLog('Error al enviar correo de confirmación:', error?.message ?? error);
-    errorLog('Detalle Resend:', JSON.stringify(error));
   }
 };
 
@@ -135,6 +135,25 @@ const CATEGORIA_LABEL = {
 };
 
 const RELACION_LABEL = { padre: 'Papá/mamá', egresado: 'Egresado', estudiante: 'Estudiante', staff: 'Staff' };
+
+const VERIFICACION_LABEL = {
+  verificado: 'Verificado en la base del colegio',
+  revisar: 'Revisar manualmente',
+  no_encontrado: 'No aparece en la base del colegio',
+  pendiente: 'Sin verificar (no se pudo consultar la base)'
+};
+
+const FRECUENCIA_LABEL = { weekly: 'semanal', biweekly: 'quincenal', monthly: 'mensual' };
+
+const donacionTexto = (fuentePago) => {
+  if (!fuentePago) return '';
+  const f = typeof fuentePago.get === 'function' ? fuentePago.get({ plain: true }) : fuentePago;
+  const valor = `$${Number(f.donation_value ?? 0).toLocaleString('es-CO')} COP`;
+  const frecuencia = FRECUENCIA_LABEL[f.billing_frequency] || f.billing_frequency;
+  const metodo = f.type === 'CARD' ? `tarjeta ${f.brand ?? ''} •••• ${f.last_four ?? ''}`.trim() : 'Nequi';
+  const donante = [f.name, f.last_name].filter(Boolean).join(' ');
+  return `${valor} ${frecuencia} · ${metodo} · ${donante}`;
+};
 
 const escapeHtml = (value = '') => String(value)
   .replace(/&/g, '&amp;')
@@ -205,6 +224,7 @@ const resumenEmprendimiento = (e) => `
     ${infoRow('Relación con TCS', (e.relacion_tcs ?? []).map((r) => RELACION_LABEL[r] || r).join(', '))}
     ${infoRow('Cédula', e.cedula)}
     ${infoRow('Código de familia', e.codigo_familia)}
+    ${infoRow('Grado', e.grado)}
     ${infoRow('Categorías', categoriasTexto(e))}
     ${infoRow('Correo de la marca', e.email)}
     ${infoRow('Contacto de la marca', e.telefono_marca ? `+${e.telefono_marca}` : '')}
@@ -225,31 +245,27 @@ const resumenEmprendimiento = (e) => `
 
 const sendEmail = async({ to, subject, html, tag, attachments }) => {
   try {
-    const result = await resend.emails.send({
-      from: `Fundación The Columbus School <${RESEND_EMAIL}>`,
+    const result = await deliverMail({
+      fromName: 'Fundación The Columbus School',
       to,
       subject,
       html,
-      ...(attachments ? { attachments } : {})
+      attachments
     });
-    if (result?.error) {
-      errorLog(`Resend rechazó el correo "${tag}" a ${to}:`, JSON.stringify(result.error));
-      return;
-    }
-    log(`Correo "${tag}" enviado a ${to}`, JSON.stringify(result?.data ?? result));
+    log(`Correo "${tag}" enviado a ${to}`, result.id);
   } catch (error) {
     errorLog(`Error al enviar correo "${tag}" a ${to}:`, error?.message ?? error);
-    errorLog('Detalle Resend:', JSON.stringify(error));
   }
 };
 
 /**
  * Alerta al administrador: hay un nuevo emprendimiento por aprobar.
  * @param {object} emprendimiento - registro recién creado (modelo o plain object)
+ * @param {object} [fuentePago]   - donación recurrente registrada con el formulario
  */
-export const sendNewEmprendimientoAlert = async(emprendimiento) => {
+export const sendNewEmprendimientoAlert = async(emprendimiento, fuentePago) => {
   const e = typeof emprendimiento.get === 'function' ? emprendimiento.get({ plain: true }) : emprendimiento;
-  const adminUrl = `${FRONTEND_URL ?? ''}/admin`;
+  const adminUrl = `${SITE_URL}/admin?tab=emprendimientos`;
 
   const bodyHtml = `
     <p style="font-size: 16px; color: #333;">Hola,</p>
@@ -258,11 +274,20 @@ export const sendNewEmprendimientoAlert = async(emprendimiento) => {
       <strong>${escapeHtml(e.nombre_emprendimiento)}</strong> en el directorio comercial y está
       <strong>pendiente de aprobación</strong>.
     </p>
-    <div style="background-color: #fff8e1; border-left: 4px solid #f5a623; padding: 12px 16px; margin: 16px 0; font-size: 13px; color: #7a5b00;">
-      <strong>Verificar con la base de datos del colegio.</strong><br />
-      Cédula: ${escapeHtml(e.cedula || 'no registrada')}${e.codigo_familia ? ` · Código de familia: ${escapeHtml(e.codigo_familia)}` : ''}.<br />
-      Si la persona no aparece en la base de datos, confírmalo antes de aprobar o rechazar el registro.
-    </div>
+    ${e.verificacion_comunidad === 'verificado' ? `
+    <div style="background-color: #f1f8e9; border-left: 4px solid #92c83e; padding: 12px 16px; margin: 16px 0; font-size: 13px; color: #33691e;">
+      <strong>${VERIFICACION_LABEL.verificado}.</strong><br />
+      Cédula: ${escapeHtml(e.cedula || '')}${e.codigo_familia ? ` · Código de familia: ${escapeHtml(e.codigo_familia)}` : ''}.
+    </div>` : `
+    <div style="background-color: #fff5f5; border-left: 4px solid #e53e3e; padding: 12px 16px; margin: 16px 0; font-size: 13px; color: #742a2a;">
+      <strong>⚠ ${escapeHtml(VERIFICACION_LABEL[e.verificacion_comunidad] || 'Verificar manualmente')}.</strong><br />
+      ${escapeHtml(e.verificacion_detalle || 'Confirma con la base de datos del colegio antes de aprobar o rechazar.')}<br />
+      Cédula: ${escapeHtml(e.cedula || 'no registrada')}${e.codigo_familia ? ` · Código de familia: ${escapeHtml(e.codigo_familia)}` : ''}.
+    </div>`}
+    ${fuentePago ? `
+    <div style="background-color: #f1f8e9; border-left: 4px solid #92c83e; padding: 12px 16px; margin: 16px 0; font-size: 13px; color: #33691e;">
+      <strong>Donación recurrente registrada:</strong> ${escapeHtml(donacionTexto(fuentePago))}
+    </div>` : ''}
     ${resumenEmprendimiento(e)}
     ${e.logo ? `<p style="margin-top: 16px;"><a href="${escapeHtml(e.logo)}" style="color: #003087;">Ver logo</a></p>` : ''}
     <p style="margin-top: 24px; text-align: center;">
@@ -274,7 +299,7 @@ export const sendNewEmprendimientoAlert = async(emprendimiento) => {
 
   await sendEmail({
     to: ADMIN_EMAIL,
-    subject: `Nuevo emprendimiento por aprobar: ${e.nombre_emprendimiento}`,
+    subject: `${e.verificacion_comunidad === 'verificado' ? '' : '⚠ Revisar · '}Nuevo emprendimiento por aprobar: ${e.nombre_emprendimiento}`,
     html: buildEmprendimientoLayout({ title: 'Nuevo emprendimiento por aprobar', bodyHtml }),
     tag: 'nuevo emprendimiento'
   });
@@ -282,30 +307,36 @@ export const sendNewEmprendimientoAlert = async(emprendimiento) => {
 
 /**
  * Notifica al representante que su emprendimiento fue aprobado y publicado.
+ * Texto definido por la Fundación (revisión 30/09/2026).
  */
 export const sendEmprendimientoApprovedEmail = async(emprendimiento) => {
   const e = typeof emprendimiento.get === 'function' ? emprendimiento.get({ plain: true }) : emprendimiento;
-  const detalleUrl = `${FRONTEND_URL ?? ''}/marketplace/${e.id}`;
+  const detalleUrl = `${SITE_URL}/directoriocomercial/${e.id}`;
+  const directorioUrl = `${SITE_URL}/directoriocomercial`;
+  const link = (url) => `<a href="${escapeHtml(url)}" style="color: #003087; font-weight: bold;">${escapeHtml(url)}</a>`;
 
   const bodyHtml = `
-    <p style="font-size: 16px; color: #333;">Hola, <strong>${escapeHtml(e.nombre_representante)}</strong></p>
+    <p style="font-size: 16px; color: #333;">Hola, <strong>${escapeHtml(e.nombre_representante)}</strong>:</p>
     <p style="font-size: 15px; color: #555;">
-      ¡Buenas noticias! Tu emprendimiento <strong>${escapeHtml(e.nombre_emprendimiento)}</strong> fue
-      aprobado y ya está publicado en el directorio comercial de la comunidad Columbus.
+      ¡Es un gusto saludarte! Nos alegra informarte que la solicitud de <strong>${escapeHtml(e.nombre_emprendimiento)}</strong>
+      ha sido aprobada para formar parte de nuestro Directorio Comercial TCS.
     </p>
-    <p style="margin-top: 24px; text-align: center;">
-      <a href="${escapeHtml(detalleUrl)}" style="display: inline-block; background-color: #92c83e; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 24px; font-weight: bold;">
-        Ver mi emprendimiento
-      </a>
+    <p style="font-size: 15px; color: #555; margin-bottom: 4px;">Aquí tienes los enlaces clave:</p>
+    <ul style="font-size: 15px; color: #555; margin-top: 4px;">
+      <li>Perfil de tu marca: ${link(detalleUrl)}</li>
+      <li>Directorio general: ${link(directorioUrl)}</li>
+    </ul>
+    <p style="font-size: 15px; color: #555;">
+      Te invitamos a compartir este directorio con toda tu comunidad TCS, queremos llegar a más personas y
+      seguir tejiendo una red colaborativa entre todos.
     </p>
-    <p style="font-size: 14px; color: #777; margin-top: 32px;">Si necesitas actualizar tu información, responde a este correo o escríbenos a ${escapeHtml(ADMIN_EMAIL)}.</p>
-    <p style="font-size: 14px; color: #333;">¡Gracias por hacer parte de nuestra comunidad!</p>
+    <p style="font-size: 15px; color: #333; margin-top: 24px;">Un abrazo,<br />Fundación The Columbus School y Asopaf</p>
   `;
 
   await sendEmail({
     to: e.email,
-    subject: `¡Tu emprendimiento ${e.nombre_emprendimiento} ya está publicado!`,
-    html: buildEmprendimientoLayout({ title: '¡Emprendimiento aprobado!', bodyHtml }),
+    subject: `¡Bienvenidos! La participación de ${e.nombre_emprendimiento} ya está aprobada 🎉`,
+    html: buildEmprendimientoLayout({ title: '¡Bienvenidos al Directorio Comercial TCS!', bodyHtml }),
     tag: 'emprendimiento aprobado'
   });
 };
@@ -315,7 +346,7 @@ export const sendEmprendimientoApprovedEmail = async(emprendimiento) => {
  */
 export const sendEmprendimientoRejectedEmail = async(emprendimiento) => {
   const e = typeof emprendimiento.get === 'function' ? emprendimiento.get({ plain: true }) : emprendimiento;
-  const registroUrl = `${FRONTEND_URL ?? ''}/marketplace/registro`;
+  const registroUrl = `${SITE_URL}/directoriocomercial/registro`;
 
   const bodyHtml = `
     <p style="font-size: 16px; color: #333;">Hola, <strong>${escapeHtml(e.nombre_representante)}</strong></p>
