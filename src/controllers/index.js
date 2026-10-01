@@ -1,3 +1,4 @@
+import { adminControllerFactory } from '#controllers/admin.controller';
 import { comunidadControllerFactory } from '#controllers/comunidad.controller';
 import { donationControllerFactory } from '#controllers/donation.controller';
 import { emprendimientoControllerFactory } from '#controllers/emprendimiento.controller';
@@ -31,3 +32,4 @@ export const paymentSourceController = paymentSourceControllerFactory();
 export const emprendimientoController = emprendimientoControllerFactory();
 export const siteContentController = siteContentControllerFactory();
 export const comunidadController = comunidadControllerFactory();
+export const adminController = adminControllerFactory();

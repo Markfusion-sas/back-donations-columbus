@@ -1,24 +1,26 @@
-import { ADMIN_API_KEY } from '#config/environment.config';
+import { NODE_ENV } from '#config/environment.config';
+import { isAdminConfigured, verifyAdminToken } from '#utils/adminToken.util';
 
 /**
- * Indica si la petición viene del panel admin (misma regla que requireAdminKey),
- * para rutas públicas que muestran información extra al administrador.
+ * Indica si la petición trae una sesión válida del panel administrativo
+ * (header `Authorization: Bearer <token>`, ver POST /admin/login).
+ *
+ * Reemplaza la antigua clave `x-admin-key`, que iba dentro del código del
+ * frontend y cualquiera podía leer (2026-10-01).
+ * Sin ADMIN_PASSWORD: en desarrollo se deja pasar; en producción se niega.
  */
-export const isAdminRequest = (req) => !ADMIN_API_KEY || req.headers['x-admin-key'] === ADMIN_API_KEY;
+export const isAdminRequest = (req) => {
+  if (!isAdminConfigured()) return NODE_ENV !== 'production';
 
-/**
- * Protege las rutas del panel administrativo.
- * Si `ADMIN_API_KEY` está definida, exige el header `x-admin-key` con ese valor.
- * Si no está definida, deja pasar (mismo comportamiento del resto del panel).
- */
+  const auth = String(req.headers.authorization ?? '');
+  return auth.startsWith('Bearer ') && verifyAdminToken(auth.slice(7));
+};
+
+/** Protege las rutas del panel administrativo. */
 export const requireAdminKey = (req, res, next) => {
-  if (!ADMIN_API_KEY) return next();
+  if (isAdminRequest(req)) return next();
 
-  if (req.headers['x-admin-key'] !== ADMIN_API_KEY) {
-    const error = new Error('No autorizado');
-    error.statusCode = 401;
-    return next(error);
-  }
-
-  next();
+  const error = new Error('Inicia sesión en el panel administrativo');
+  error.statusCode = 401;
+  next(error);
 };

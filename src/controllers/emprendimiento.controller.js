@@ -2,6 +2,18 @@ import { EMPRENDIMIENTO_STATUS } from '#config/constants.config';
 import { isAdminRequest } from '#middlewares/requireAdminKey.middleware';
 import { emprendimientoService } from '#services/index';
 
+// Datos que solo ve el administrador; el directorio público no los recibe (2026-10-01)
+const CAMPOS_PRIVADOS = [
+  'cedula', 'codigo_familia', 'grado', 'telefono_personal', 'nombre_representante', 'relacion_tcs',
+  'verificacion_comunidad', 'verificacion_detalle', 'motivo_rechazo', 'fuente_pago_id', 'donacion'
+];
+
+const publico = (emprendimiento) => {
+  const copia = { ...emprendimiento };
+  CAMPOS_PRIVADOS.forEach((campo) => delete copia[campo]);
+  return copia;
+};
+
 export const emprendimientoControllerFactory = () => {
 
   /** POST /emprendimientos — registro público (multipart/form-data) */
@@ -32,11 +44,16 @@ export const emprendimientoControllerFactory = () => {
         throw error;
       }
 
-      const emprendimientos = await emprendimientoService.getEmprendimientos({ estado, conDonacion: isAdminRequest(req) });
+      const admin = isAdminRequest(req);
+      // Sin sesión de admin solo se listan los aprobados, sin datos personales
+      const emprendimientos = await emprendimientoService.getEmprendimientos({
+        estado: admin ? estado : EMPRENDIMIENTO_STATUS.APPROVED,
+        conDonacion: admin
+      });
 
       return res.status(200).json({
         success: true,
-        data: emprendimientos
+        data: admin ? emprendimientos : emprendimientos.map(publico)
       });
     } catch (error) {
       next(error);
@@ -46,11 +63,18 @@ export const emprendimientoControllerFactory = () => {
   /** GET /emprendimientos/:id */
   const getEmprendimientoById = async(req, res, next) => {
     try {
-      const emprendimiento = await emprendimientoService.getEmprendimientoById(req.params.id, { conDonacion: isAdminRequest(req) });
+      const admin = isAdminRequest(req);
+      const emprendimiento = await emprendimientoService.getEmprendimientoById(req.params.id, { conDonacion: admin });
+
+      if (!admin && emprendimiento.estado !== EMPRENDIMIENTO_STATUS.APPROVED) {
+        const error = new Error('Emprendimiento no encontrado');
+        error.statusCode = 404;
+        throw error;
+      }
 
       return res.status(200).json({
         success: true,
-        data: emprendimiento
+        data: admin ? emprendimiento : publico(emprendimiento)
       });
     } catch (error) {
       next(error);

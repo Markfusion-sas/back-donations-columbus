@@ -23,7 +23,8 @@
  * @constant {string} RESEND_API_KEY  - API key de Resend para envío de correos.
  * @constant {string} RESEND_EMAIL    - Remitente de los correos (dominio verificado en Resend).
  * @constant {string} ADMIN_EMAIL     - Correo del administrador que recibe la alerta de nuevos emprendimientos.
- * @constant {string} ADMIN_API_KEY   - (Opcional) Clave que debe enviar el panel admin en el header `x-admin-key`
+ * @constant {string} ADMIN_PASSWORD  - Contraseña del panel administrativo (POST /admin/login). Obligatoria en producción.
+ * @constant {string} ADMIN_API_KEY   - (Obsoleta) Ya no se usa; el panel inicia sesión con ADMIN_PASSWORD.
  *                                       para aprobar/rechazar emprendimientos. Si no se define, no se exige.
  * @constant {string} UPLOADS_DIR     - Carpeta donde se guardan logos y fotos (por defecto ./uploads).
  * @constant {string} PUBLIC_URL      - URL pública del backend para construir los enlaces de las imágenes
@@ -58,6 +59,7 @@ export const {
   RESEND_EMAIL,
   ADMIN_EMAIL = 'fundaciontcs@columbus.edu.co',
   ADMIN_API_KEY,
+  ADMIN_PASSWORD,
   UPLOADS_DIR = 'uploads',
   PUBLIC_URL,
   WOMPI_PRIVATE_KEY,

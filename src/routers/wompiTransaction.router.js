@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { listTransactionsController, wompiController,wompiSignatureController } from '#controllers/index';
+import { requireAdminKey } from '#middlewares/requireAdminKey.middleware';
 import { validateRequestBody } from '#middlewares/validateRequestBody.middleware';
 import { validateSignatureRequest } from '#middlewares/validateSignatureRequest.middleware';
 import { validateWompiStatus } from '#middlewares/validateWompiStatus.middleware';
@@ -87,6 +88,6 @@ router.post('/',verifyWompiChecksum,validateRequestBody,validateWompiStatus, wom
  */
 router.post('/generate-signature',validateSignatureRequest, wompiSignatureController);
 
-router.get('/', listTransactionsController);
+router.get('/', requireAdminKey, listTransactionsController);
 
 export default router;
