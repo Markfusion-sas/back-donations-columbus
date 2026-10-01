@@ -41,6 +41,7 @@
  * @constant {string} MSSQL_USER     - Usuario de SQL Server.
  * @constant {string} MSSQL_PASSWORD - Contraseña de SQL Server.
  * @constant {string} MSSQL_DB       - Base con las tablas students y family_info.
+ * @constant {string} STAFF_COMPANIAS - Compañías de SIESA cuyos empleados cuentan como staff (por defecto "1", como TCS Run).
  */
 export const {
   FRONTEND_URL,
@@ -73,6 +74,7 @@ export const {
   MSSQL_USER,
   MSSQL_PASSWORD,
   MSSQL_DB,
+  STAFF_COMPANIAS = '1',
   MAIL_HOST,
   MAIL_PORT = 587,
   MAIL_USER,

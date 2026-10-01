@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 
-import { comunidadServiceFactory, normalizeCelular, sanitizeCedula } from '#services/comunidad.service';
+import { comunidadServiceFactory, normalizeCelular, parseCompanias, sanitizeCedula } from '#services/comunidad.service';
 
 // Base del colegio simulada: responde según la consulta que se ejecute
 const fakeDb = ({ empleados = {}, estudiantes = {}, familias = {} } = {}) => async(sql, params = {}) => {
@@ -35,6 +35,24 @@ describe('Service: comunidadService', () => {
   it('sanitizeCedula should strip quotes and symbols (the value goes inside OPENQUERY)', () => {
     assert.strictEqual(sanitizeCedula("123'; DROP--"), '123DROP--');
     assert.strictEqual(sanitizeCedula(' 1.017.234 '), '1017234');
+  });
+
+  it('parseCompanias should accept only numeric company ids (they go inside OPENQUERY)', () => {
+    assert.deepStrictEqual(parseCompanias('1,3'), ['1', '3']);
+    assert.deepStrictEqual(parseCompanias(undefined), ['1']);
+    assert.deepStrictEqual(parseCompanias("1; DROP TABLE x"), ['1']);
+    assert.deepStrictEqual(parseCompanias("3'') --"), ['1']);
+  });
+
+  it('should search employees only in the configured companies', async() => {
+    const consultas = [];
+    const service = comunidadServiceFactory({
+      runQuery: async(text) => { consultas.push(text); return []; },
+      isConfigured: () => true,
+      staffCompanias: '1,3'
+    });
+    await service.buscarPorCedula('1000903198');
+    assert.ok(consultas.some((q) => q.includes('f200_id_cia IN (1, 3)')));
   });
 
   it('normalizeCelular should keep only Colombian mobile numbers', () => {

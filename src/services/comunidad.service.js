@@ -45,7 +45,18 @@ const RELACION_LABEL = { padre: 'papá/mamá', estudiante: 'estudiante', staff: 
 // Las relaciones que se verifican contra la base del colegio
 const RELACIONES_VERIFICABLES = ['padre', 'estudiante', 'staff'];
 
-const empleadoQuery = (nit) => `
+/**
+ * Compañías de SIESA cuyos empleados cuentan como staff. TCS Run usa solo la 1;
+ * se configura con STAFF_COMPANIAS (ej. "1,3") sin cambiar código. Solo dígitos,
+ * porque va dentro del OPENQUERY.
+ * @param {string} [value]
+ */
+export const parseCompanias = (value) => {
+  const ids = String(value ?? '1').split(',').map((v) => v.trim()).filter((v) => /^\d{1,4}$/.test(v));
+  return ids.length ? ids : ['1'];
+};
+
+const empleadoQuery = (nit, companias) => `
   SELECT *
   FROM OPENQUERY(CSERPDB,
   'SELECT
@@ -62,7 +73,7 @@ const empleadoQuery = (nit) => `
    WHERE f200_ind_empleado = 1
      AND f200_ind_estado = 1
      AND c0550_fecha_retiro IS NULL
-     AND f200_id_cia = 1
+     AND f200_id_cia IN (${companias.join(', ')})
      AND f200_ind_tipo_tercero = 1
      AND f200_nit = ''${nit}''
   ')
@@ -87,7 +98,8 @@ const FAMILIA_QUERY = `
  * @param {Function} deps.isConfigured - () => boolean
  * @param {Function} [deps.errorLog]
  */
-export const comunidadServiceFactory = ({ runQuery, isConfigured, errorLog = () => {} }) => {
+export const comunidadServiceFactory = ({ runQuery, isConfigured, errorLog = () => {}, staffCompanias = '1' }) => {
+  const companias = parseCompanias(staffCompanias);
 
   /**
    * Busca la cédula en la base del colegio.
@@ -102,7 +114,7 @@ export const comunidadServiceFactory = ({ runQuery, isConfigured, errorLog = () 
     let empleado, estudiante, familia;
     try {
       [[empleado], [estudiante], [familia]] = await Promise.all([
-        runQuery(empleadoQuery(nit)),
+        runQuery(empleadoQuery(nit, companias)),
         runQuery(ESTUDIANTE_QUERY, { nit }),
         runQuery(FAMILIA_QUERY, { nit })
       ]);

@@ -1,7 +1,7 @@
 import { unlink } from 'fs/promises';
 import { join } from 'path';
 
-import { UPLOADS_DIR } from '#config/environment.config';
+import { STAFF_COMPANIAS, UPLOADS_DIR } from '#config/environment.config';
 import { isMssqlConfigured, runMssqlQuery } from '#config/mssql.config';
 import { mapDonation } from '#mappers/donation.mapper';
 import { mapEmprendimientoResponse } from '#mappers/emprendimiento.mapper';
@@ -94,7 +94,8 @@ const removeUploadedFiles = async(urls = []) => {
 export const comunidadService = comunidadServiceFactory({
   runQuery: runMssqlQuery,
   isConfigured: isMssqlConfigured,
-  errorLog
+  errorLog,
+  staffCompanias: STAFF_COMPANIAS
 });
 
 export const emprendimientoService = emprendimientoServiceFactory({
