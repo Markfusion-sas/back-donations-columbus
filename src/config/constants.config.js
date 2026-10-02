@@ -17,7 +17,10 @@ export const PAYMENT_SOURCE_TYPE = {
 export const EMPRENDIMIENTO_STATUS = {
   PENDING: 'pendiente',
   APPROVED: 'aprobado',
-  REJECTED: 'rechazado'
+  REJECTED: 'rechazado',
+  // Marca que estuvo publicada y se retiró a solicitud del dueño, sin enviarle
+  // el correo de "no aprobado" (aprobado por Manuela Toro, 2026-10-02)
+  RETIRED: 'retirado'
 };
 
 export const EMPRENDIMIENTO_CATEGORIAS = [

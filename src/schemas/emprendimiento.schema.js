@@ -38,14 +38,24 @@ export const emprendimientoSchema = Joi.object({
   // se toma de allí (no se muestra en pantalla, 2026-10-01); si no, lo escribe la
   // persona. La obligatoriedad se revisa en el servicio, después de consultar la base.
   codigo_familia: Joi.string().max(30).allow(null, ''),
-  // Estudiantes: grado que cursan (revisión 30/09/2026)
-  grado: Joi.string().max(30).allow(null, '').when('relacion_tcs', {
-    is: Joi.array().has('estudiante'),
-    then: Joi.string().max(30).invalid(null, '').required().messages({
-      'any.invalid': 'El grado es obligatorio para estudiantes',
-      'any.required': 'El grado es obligatorio para estudiantes'
-    })
-  }),
+  // Estudiantes: grado que cursan (revisión 30/09/2026). Egresados: su generación
+  // (revisión de la Fundación, 2026-10-02). Se guardan en la misma columna `grado`
+  // para no alterar la tabla en producción: nadie es estudiante y egresado a la vez.
+  grado: Joi.string().max(30).allow(null, '')
+    .when('relacion_tcs', {
+      is: Joi.array().has('estudiante'),
+      then: Joi.string().max(30).invalid(null, '').required().messages({
+        'any.invalid': 'El grado es obligatorio para estudiantes',
+        'any.required': 'El grado es obligatorio para estudiantes'
+      }),
+      otherwise: Joi.when('relacion_tcs', {
+        is: Joi.array().has('egresado'),
+        then: Joi.string().max(30).invalid(null, '').required().messages({
+          'any.invalid': 'La generación es obligatoria para egresados',
+          'any.required': 'La generación es obligatoria para egresados'
+        })
+      })
+    }),
   telefono_personal: phone,
   relacion_tcs: Joi.array().items(Joi.string().valid(...EMPRENDIMIENTO_RELACIONES)).min(1).required().messages({
     'array.min': 'Selecciona al menos una relación con The Columbus School',
@@ -73,10 +83,9 @@ export const emprendimientoSchema = Joi.object({
   descripcion: requiredText(500, 'La descripción de productos o servicios'),
   red_social: requiredText(60, 'El usuario de la red social'),
   red_social_tipo: Joi.string().valid(...EMPRENDIMIENTO_REDES).default('instagram'),
-  web: Joi.string().uri({ scheme: ['http', 'https'] }).required().messages({
-    'string.uri': 'El link debe ser una URL válida (http:// o https://)',
-    'string.empty': 'El link de página web o portafolio es obligatorio',
-    'any.required': 'El link de página web o portafolio es obligatorio'
+  // Opcional desde la revisión de la Fundación (2026-10-02): no todas las marcas tienen página
+  web: Joi.string().uri({ scheme: ['http', 'https'] }).allow(null, '').messages({
+    'string.uri': 'El link debe ser una URL válida (http:// o https://)'
   }),
   punto_fisico: Joi.string().max(150).allow(null, ''),
   horario: Joi.string().max(150).allow(null, ''),

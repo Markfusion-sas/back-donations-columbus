@@ -11,6 +11,9 @@ const CAMPOS_PRIVADOS = [
 const publico = (emprendimiento) => {
   const copia = { ...emprendimiento };
   CAMPOS_PRIVADOS.forEach((campo) => delete copia[campo]);
+  // Correo oculto por el administrador (p. ej. es el correo personal del dueño)
+  if (copia.mostrar_email === false) delete copia.email;
+  delete copia.mostrar_email;
   return copia;
 };
 
@@ -31,7 +34,7 @@ export const emprendimientoControllerFactory = () => {
   };
 
   /**
-   * GET /emprendimientos?estado=pendiente|aprobado|rechazado
+   * GET /emprendimientos?estado=pendiente|aprobado|rechazado|retirado
    * Sin `estado` devuelve todos (uso del panel admin).
    */
   const getEmprendimientos = async(req, res, next) => {
@@ -127,7 +130,37 @@ export const emprendimientoControllerFactory = () => {
     }
   };
 
+  /** PATCH /emprendimientos/:id/retirar — sin correo al representante */
+  const retirarEmprendimiento = async(req, res, next) => {
+    try {
+      const emprendimiento = await emprendimientoService.retirarEmprendimiento(req.params.id);
+
+      return res.status(200).json({
+        success: true,
+        data: emprendimiento
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /** PATCH /emprendimientos/:id/correo-visible  body: { visible } */
+  const setCorreoVisible = async(req, res, next) => {
+    try {
+      const emprendimiento = await emprendimientoService.setCorreoVisible(req.params.id, req.body?.visible);
+
+      return res.status(200).json({
+        success: true,
+        data: emprendimiento
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   return {
+    retirarEmprendimiento,
+    setCorreoVisible,
     createEmprendimiento,
     updateEmprendimiento,
     getEmprendimientos,

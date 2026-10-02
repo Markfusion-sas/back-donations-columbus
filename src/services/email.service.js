@@ -224,7 +224,7 @@ const resumenEmprendimiento = (e) => `
     ${infoRow('Relación con TCS', (e.relacion_tcs ?? []).map((r) => RELACION_LABEL[r] || r).join(', '))}
     ${infoRow('Cédula', e.cedula)}
     ${infoRow('Código de familia', e.codigo_familia)}
-    ${infoRow('Grado', e.grado)}
+    ${infoRow((e.relacion_tcs ?? []).includes('estudiante') ? 'Grado' : 'Generación', e.grado)}
     ${infoRow('Categorías', categoriasTexto(e))}
     ${infoRow('Correo de la marca', e.email)}
     ${infoRow('Contacto de la marca', e.telefono_marca ? `+${e.telefono_marca}` : '')}
@@ -329,6 +329,10 @@ export const sendEmprendimientoApprovedEmail = async(emprendimiento) => {
     <p style="font-size: 15px; color: #555;">
       Te invitamos a compartir este directorio con toda tu comunidad TCS, queremos llegar a más personas y
       seguir tejiendo una red colaborativa entre todos.
+    </p>
+    <p style="font-size: 14px; color: #555; background: #f5f7fa; border-radius: 6px; padding: 12px 14px;">
+      Si en algún momento quieres actualizar la información de tu marca o retirarla del directorio,
+      escríbenos a <a href="mailto:${escapeHtml(ADMIN_EMAIL)}" style="color: #003087; font-weight: bold;">${escapeHtml(ADMIN_EMAIL)}</a>.
     </p>
     <p style="font-size: 15px; color: #333; margin-top: 24px;">Un abrazo,<br />Fundación The Columbus School y Asopaf</p>
   `;

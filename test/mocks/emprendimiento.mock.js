@@ -3,6 +3,7 @@ export const emprendimientoBodyMock = {
   nombre_representante: 'Isabel Páez Mercado',
   cedula: '1017234567',
   codigo_familia: 'FAM-123',
+  grado: '2005',
   telefono_personal: '+57 300 111 2233',
   'relacion_tcs[]': ['padre', 'egresado'],
   nombre_emprendimiento: 'Salsisa',

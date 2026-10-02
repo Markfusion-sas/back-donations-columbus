@@ -43,7 +43,7 @@ Emprendimiento.init({
     type: DataTypes.TEXT,
     allowNull: true
   },
-  // Solo para estudiantes
+  // Estudiantes: grado. Egresados: generación (2026-10-02)
   grado: {
     type: DataTypes.STRING,
     allowNull: true
@@ -65,6 +65,14 @@ Emprendimiento.init({
   email: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  // Si el correo se ve en la ficha pública. Sigue siendo obligatorio (es el contacto
+  // con la Fundación), pero algunas marcas pequeñas usan el correo personal del dueño:
+  // el administrador lo oculta desde el panel (Manuela Toro, 2026-10-02).
+  mostrar_email: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true
   },
   categorias: stringList('categorias'),
   categoria_otro: {

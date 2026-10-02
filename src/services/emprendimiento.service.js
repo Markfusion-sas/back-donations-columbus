@@ -113,6 +113,8 @@ export const emprendimientoServiceFactory = ({
   const aprobarEmprendimiento = async(id) => {
     const emprendimiento = await Emprendimiento.findByPk(id);
     if (!emprendimiento) throw notFound();
+    // Volver a publicar una marca retirada no repite el correo de bienvenida
+    const republicada = emprendimiento.estado === EMPRENDIMIENTO_STATUS.RETIRED;
 
     await emprendimiento.update({
       estado: EMPRENDIMIENTO_STATUS.APPROVED,
@@ -120,7 +122,7 @@ export const emprendimientoServiceFactory = ({
       revisado_en: new Date()
     });
 
-    await safeNotify(notifyApproved, emprendimiento);
+    if (!republicada) await safeNotify(notifyApproved, emprendimiento);
 
     return mapEmprendimientoResponse(emprendimiento);
   };
@@ -136,6 +138,29 @@ export const emprendimientoServiceFactory = ({
     });
 
     await safeNotify(notifyRejected, emprendimiento);
+
+    return mapEmprendimientoResponse(emprendimiento);
+  };
+
+  /** Retira la marca del directorio público a solicitud del dueño. No envía correo. */
+  const retirarEmprendimiento = async(id) => {
+    const emprendimiento = await Emprendimiento.findByPk(id);
+    if (!emprendimiento) throw notFound();
+
+    await emprendimiento.update({
+      estado: EMPRENDIMIENTO_STATUS.RETIRED,
+      revisado_en: new Date()
+    });
+
+    return mapEmprendimientoResponse(emprendimiento);
+  };
+
+  /** Muestra u oculta el correo en la ficha pública (panel admin, 2026-10-02) */
+  const setCorreoVisible = async(id, visible) => {
+    const emprendimiento = await Emprendimiento.findByPk(id);
+    if (!emprendimiento) throw notFound();
+
+    await emprendimiento.update({ mostrar_email: visible === true || visible === 'true' });
 
     return mapEmprendimientoResponse(emprendimiento);
   };
@@ -181,7 +206,9 @@ export const emprendimientoServiceFactory = ({
     getEmprendimientos,
     getEmprendimientoById,
     aprobarEmprendimiento,
-    rechazarEmprendimiento
+    rechazarEmprendimiento,
+    retirarEmprendimiento,
+    setCorreoVisible
   };
 
 };

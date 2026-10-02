@@ -106,8 +106,19 @@ describe('Schema: emprendimientoSchema', () => {
     assert.strictEqual(error, undefined, error?.message);
   });
 
+  it('should require the graduation year (generación, stored in grado) for alumni', () => {
+    const egresado = { ...valid, relacion_tcs: ['egresado'], grado: '' };
+    assert.match(emprendimientoSchema.validate(egresado).error.message, /generación/);
+    assert.strictEqual(emprendimientoSchema.validate({ ...egresado, grado: '2010' }).error, undefined);
+  });
+
+  it('should accept a registration without website link', () => {
+    assert.strictEqual(emprendimientoSchema.validate({ ...valid, web: '' }).error, undefined);
+    assert.strictEqual(mapEmprendimiento({ ...emprendimientoBodyMock, web: '' }).web, '');
+  });
+
   it('should require the grade (grado) for students', () => {
-    const estudiante = { ...valid, relacion_tcs: ['estudiante'] };
+    const estudiante = { ...valid, relacion_tcs: ['estudiante'], grado: '' };
     assert.match(emprendimientoSchema.validate(estudiante).error.message, /grado/);
     assert.strictEqual(emprendimientoSchema.validate({ ...estudiante, grado: '8°' }).error, undefined);
   });

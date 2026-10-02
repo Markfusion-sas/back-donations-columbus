@@ -40,7 +40,8 @@ export const mapEmprendimiento = (data = {}, { logo, fotos = [] } = {}) => {
     descripcion: clean(data.descripcion),
     red_social: clean(data.red_social)?.replace(/^@/, ''),
     red_social_tipo: clean(data.red_social_tipo) || 'instagram',
-    web: clean(data.web),
+    // La columna es NOT NULL en la base; sin link se guarda vacío (link opcional desde 2026-10-02)
+    web: clean(data.web) || '',
     punto_fisico: clean(data.punto_fisico) || null,
     horario: clean(data.horario) || null,
     envios: clean(data.envios) || null,
@@ -93,6 +94,7 @@ export const mapEmprendimientoResponse = (emprendimiento) => {
     relacion_tcs: e.relacion_tcs ?? [],
     telefono_marca: e.telefono_marca,
     email: e.email,
+    mostrar_email: e.mostrar_email !== false,
     categorias: e.categorias ?? [],
     categoria_otro: e.categoria_otro,
     historia: e.historia,
